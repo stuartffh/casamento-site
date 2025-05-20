@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 // Obter todos os RSVPs (protegido)
 router.get('/', protectNonGetRoutes, async (req, res) => {
   try {
-    const rsvps = await prisma.rSVP.findMany({
+    const rsvps = await prisma.RSVP.findMany({
       orderBy: { createdAt: 'desc' }
     });
     res.json(rsvps);
@@ -27,7 +27,7 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Nome é obrigatório' });
     }
     
-    const newRSVP = await prisma.rSVP.create({
+    const newRSVP = await prisma.RSVP.create({
       data: {
         name,
         companions: companions || 0,
@@ -51,7 +51,7 @@ router.delete('/:id', protectNonGetRoutes, async (req, res) => {
     const { id } = req.params;
     
     // Verificar se o RSVP existe
-    const rsvp = await prisma.rSVP.findUnique({
+    const rsvp = await prisma.RSVP.findUnique({
       where: { id: Number(id) }
     });
     
@@ -60,7 +60,7 @@ router.delete('/:id', protectNonGetRoutes, async (req, res) => {
     }
     
     // Excluir o RSVP
-    await prisma.rSVP.delete({
+    await prisma.RSVP.delete({
       where: { id: Number(id) }
     });
     
@@ -74,7 +74,7 @@ router.delete('/:id', protectNonGetRoutes, async (req, res) => {
 // Exportar RSVPs para CSV (protegido)
 router.get('/export', protectNonGetRoutes, async (req, res) => {
   try {
-    const rsvps = await prisma.rSVP.findMany({
+    const rsvps = await prisma.RSVP.findMany({
       orderBy: { createdAt: 'desc' }
     });
     
