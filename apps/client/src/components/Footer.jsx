@@ -62,7 +62,7 @@ const EventDate = styled.div`
 
 
 const Footer = () => {
-  //const currentYear = new Date().getFullYear();
+  const currentYear = new Date().getFullYear();
   
   // Não mostrar o footer nas páginas de admin
   if (window.location.pathname.startsWith('/admin')) {
@@ -75,7 +75,9 @@ const Footer = () => {
         <Names>
           Marília <span>&</span> Iago
         </Names>
+        <EventDate>20 de Setembro de 2025</EventDate>
         <Copyright>
+          © {currentYear} - Todos os direitos reservados
         </Copyright>
       </FooterContent>
     </FooterContainer>
