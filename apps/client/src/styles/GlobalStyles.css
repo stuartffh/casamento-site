@@ -1,7 +1,7 @@
 /* Estilos globais para o site de casamento Marília & Iago */
 /* Nova paleta de cores: #B695C0 (lilás), #425943 (verde escuro), #503459 (roxo escuro), #FFFFFF (branco) */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500&display=swap');
 
 :root {
   --primary: #B695C0;
@@ -17,6 +17,12 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -77,14 +83,14 @@ button:hover, .button:hover {
 
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0 20px;
 }
 
 /* Header e navegação */
 header {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -92,6 +98,7 @@ header {
   padding: 20px 0;
   background-color: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(5px);
+  border-bottom: 1px solid rgba(182, 149, 192, 0.2);
 }
 
 .header-container {
@@ -142,6 +149,8 @@ header {
 /* Hero section */
 .hero {
   height: 100vh;
+  width: 100%;
+  background-image: url('/images/couple-background.png');
   background-size: cover;
   background-position: center;
   display: flex;
@@ -159,7 +168,7 @@ header {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.4);
+  background: linear-gradient(to bottom, rgba(80, 52, 89, 0.5), rgba(66, 89, 67, 0.5));
 }
 
 .hero-content {
@@ -173,12 +182,14 @@ header {
   font-size: 4.5rem;
   margin-bottom: 1rem;
   color: var(--white);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .hero-subtitle {
   font-size: 1.8rem;
   margin-bottom: 2rem;
   font-weight: 300;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .hero-date {
@@ -186,11 +197,30 @@ header {
   font-size: 2rem;
   margin-bottom: 2rem;
   letter-spacing: 2px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.hero-button {
+  background-color: var(--primary);
+  color: var(--white);
+  padding: 15px 30px;
+  font-size: 1.1rem;
+  border-radius: 3px;
+  display: inline-block;
+  transition: all 0.3s ease;
+  border: 2px solid var(--primary);
+}
+
+.hero-button:hover {
+  background-color: transparent;
+  color: var(--white);
+  border-color: var(--white);
 }
 
 /* Seções */
 .section {
   padding: 100px 0;
+  width: 100%;
 }
 
 .section-title {
@@ -213,7 +243,7 @@ header {
 /* Nossa História */
 .timeline {
   position: relative;
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
@@ -244,10 +274,29 @@ header {
 
 .timeline-content {
   width: 45%;
-  padding: 20px;
+  padding: 30px;
   background-color: var(--white);
   border-radius: 5px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.timeline-content::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-color: var(--white);
+  top: 20px;
+  transform: rotate(45deg);
+}
+
+.timeline-item .timeline-content::before {
+  right: -10px;
+}
+
+.timeline-item:nth-child(even) .timeline-content::before {
+  left: -10px;
 }
 
 .timeline-date {
@@ -267,6 +316,15 @@ header {
   border-radius: 50%;
   background-color: var(--primary);
   border: 3px solid var(--white);
+  z-index: 1;
+}
+
+.timeline-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 5px;
+  margin-bottom: 15px;
 }
 
 /* Lista de Presentes */
@@ -274,15 +332,17 @@ header {
   display: flex;
   justify-content: center;
   margin-bottom: 40px;
+  border-bottom: 1px solid rgba(182, 149, 192, 0.3);
 }
 
 .gift-tab {
-  padding: 10px 20px;
+  padding: 15px 30px;
   margin: 0 5px;
   cursor: pointer;
   border-bottom: 2px solid transparent;
   font-family: var(--font-serif);
   font-size: 1.2rem;
+  transition: all 0.3s ease;
 }
 
 .gift-tab.active {
@@ -301,11 +361,12 @@ header {
   border-radius: 5px;
   overflow: hidden;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .gift-card:hover {
   transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 .gift-image {
@@ -315,7 +376,7 @@ header {
 }
 
 .gift-info {
-  padding: 20px;
+  padding: 25px;
 }
 
 .gift-name {
@@ -327,28 +388,34 @@ header {
 .gift-price {
   color: var(--accent);
   font-weight: 500;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+.gift-button {
+  width: 100%;
+  text-align: center;
 }
 
 /* Formulário RSVP */
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 .form-label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   font-family: var(--font-serif);
   font-size: 1.1rem;
 }
 
 .form-input {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
+  padding: 15px;
+  border: 1px solid rgba(182, 149, 192, 0.3);
   border-radius: 4px;
   font-family: var(--font-sans);
   font-size: 1rem;
+  transition: border-color 0.3s ease;
 }
 
 .form-input:focus {
@@ -362,12 +429,36 @@ header {
 }
 
 .form-container {
-  max-width: 600px;
+  max-width: 700px;
   margin: 0 auto;
   background-color: var(--white);
-  padding: 40px;
+  padding: 50px;
   border-radius: 5px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  position: relative;
+}
+
+.form-container::before,
+.form-container::after {
+  content: '';
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background-image: url('/images/floral-corner.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.2;
+}
+
+.form-container::before {
+  top: 20px;
+  left: 20px;
+}
+
+.form-container::after {
+  bottom: 20px;
+  right: 20px;
+  transform: rotate(180deg);
 }
 
 /* Informações */
@@ -379,10 +470,15 @@ header {
 
 .info-card {
   text-align: center;
-  padding: 30px;
+  padding: 40px 30px;
   background-color: var(--white);
   border-radius: 5px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-5px);
 }
 
 .info-icon {
@@ -398,10 +494,11 @@ header {
 }
 
 .map-container {
-  height: 300px;
-  margin-top: 20px;
+  height: 400px;
+  margin-top: 30px;
   border-radius: 5px;
   overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 
 /* Álbum */
@@ -409,15 +506,17 @@ header {
   display: flex;
   justify-content: center;
   margin-bottom: 40px;
+  border-bottom: 1px solid rgba(182, 149, 192, 0.3);
 }
 
 .album-tab {
-  padding: 10px 20px;
+  padding: 15px 30px;
   margin: 0 5px;
   cursor: pointer;
   border-bottom: 2px solid transparent;
   font-family: var(--font-serif);
   font-size: 1.2rem;
+  transition: all 0.3s ease;
 }
 
 .album-tab.active {
@@ -428,13 +527,15 @@ header {
 .album-carousel {
   margin-bottom: 40px;
   position: relative;
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
 }
 
 .carousel-image {
   width: 100%;
-  height: 500px;
+  height: 600px;
   object-fit: cover;
-  border-radius: 5px;
 }
 
 .carousel-nav {
@@ -452,6 +553,7 @@ header {
   font-size: 1.5rem;
   color: var(--accent);
   transition: all 0.3s ease;
+  z-index: 2;
 }
 
 .carousel-nav:hover {
@@ -468,15 +570,16 @@ header {
 
 .album-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
 }
 
 .album-thumbnail {
-  height: 200px;
+  height: 250px;
   border-radius: 5px;
   overflow: hidden;
   cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 
 .album-thumbnail img {
@@ -494,13 +597,38 @@ header {
 footer {
   background-color: var(--accent);
   color: var(--white);
-  padding: 50px 0 20px;
+  padding: 70px 0 30px;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+footer::before,
+footer::after {
+  content: '';
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  background-image: url('/images/floral-corner.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.1;
+}
+
+footer::before {
+  top: 20px;
+  left: 20px;
+}
+
+footer::after {
+  bottom: 20px;
+  right: 20px;
+  transform: rotate(180deg);
 }
 
 .footer-logo {
   font-family: var(--font-serif);
-  font-size: 2rem;
+  font-size: 2.5rem;
   margin-bottom: 20px;
 }
 
@@ -519,6 +647,7 @@ footer {
 .admin-container {
   display: flex;
   min-height: 100vh;
+  width: 100%;
 }
 
 .admin-sidebar {
@@ -641,6 +770,31 @@ footer {
 }
 
 /* Responsividade */
+@media (max-width: 1200px) {
+  .container {
+    max-width: 100%;
+    padding: 0 30px;
+  }
+}
+
+@media (max-width: 992px) {
+  .hero-title {
+    font-size: 3.5rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.6rem;
+  }
+  
+  .section {
+    padding: 80px 0;
+  }
+  
+  .carousel-image {
+    height: 500px;
+  }
+}
+
 @media (max-width: 768px) {
   h1 {
     font-size: 2.5rem;
@@ -708,6 +862,48 @@ footer {
   .admin-menu-item {
     padding: 10px 20px;
   }
+  
+  .form-container {
+    padding: 30px;
+  }
+  
+  .carousel-image {
+    height: 400px;
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 0 20px;
+  }
+  
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.3rem;
+  }
+  
+  .hero-date {
+    font-size: 1.3rem;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+  }
+  
+  .carousel-image {
+    height: 300px;
+  }
+  
+  .album-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+  
+  .album-thumbnail {
+    height: 150px;
+  }
 }
 
 /* Elementos decorativos */
@@ -756,4 +952,61 @@ footer {
 
 .delay-3 {
   animation-delay: 0.6s;
+}
+
+/* Contador regressivo */
+.countdown {
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
+}
+
+.countdown-item {
+  margin: 0 15px;
+  text-align: center;
+}
+
+.countdown-number {
+  font-size: 3rem;
+  font-weight: 700;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  padding: 10px 20px;
+  min-width: 100px;
+  display: inline-block;
+  backdrop-filter: blur(5px);
+}
+
+.countdown-label {
+  font-size: 1rem;
+  margin-top: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Botão de volta ao topo */
+.back-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  background-color: var(--primary);
+  color: var(--white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 99;
+}
+
+.back-to-top.visible {
+  opacity: 1;
+}
+
+.back-to-top:hover {
+  background-color: var(--accent);
 }

@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
     allowedHosts: [
       '5173-iwkr8qyofo1hq333cftog-dc36dad8.manus.computer',
+      '5174-iwkr8qyofo1hq333cftog-dc36dad8.manus.computer',
       'localhost'
     ]
   }

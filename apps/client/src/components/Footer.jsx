@@ -1,17 +1,21 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useLocation } from 'react-router-dom';
 
 const FooterContainer = styled.footer`
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
-  padding: 2rem 0;
+  background-color: var(--accent);
+  color: var(--white);
+  padding: 3rem 0 1.5rem;
   margin-top: 3rem;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
 `;
 
 const FooterContent = styled.div`
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -19,18 +23,13 @@ const FooterContent = styled.div`
 `;
 
 const Names = styled.h3`
-  font-family: 'Playfair Display', serif;
-  font-size: 1.5rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
   margin-bottom: 1rem;
   
   span {
-    color: var(--cor-primaria-clara);
+    color: var(--primary);
   }
-`;
-
-const Date = styled.p`
-  font-size: 1.1rem;
-  margin-bottom: 1.5rem;
 `;
 
 const Copyright = styled.p`
@@ -39,38 +38,48 @@ const Copyright = styled.p`
   margin-top: 1.5rem;
 `;
 
-const SocialLinks = styled.div`
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-`;
-
-const SocialLink = styled.a`
-  color: var(--cor-branco);
-  font-size: 1.5rem;
-  transition: color 0.3s ease;
-  
-  &:hover {
-    color: var(--cor-primaria-clara);
-  }
-`;
-
 const EventDate = styled.div`
   font-size: 1.2rem;
   margin-top: 10px;
+  font-family: 'Cormorant Garamond', serif;
+  letter-spacing: 1px;
 `;
 
+const FloralDecoration = styled.div`
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  opacity: 0.1;
+  background-size: contain;
+  background-repeat: no-repeat;
+  
+  &.top-left {
+    top: 20px;
+    left: 20px;
+    background-position: top left;
+  }
+  
+  &.bottom-right {
+    bottom: 20px;
+    right: 20px;
+    background-position: bottom right;
+    transform: rotate(180deg);
+  }
+`;
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const location = useLocation();
   
   // Não mostrar o footer nas páginas de admin
-  if (window.location.pathname.startsWith('/admin')) {
+  if (location.pathname.startsWith('/admin')) {
     return null;
   }
   
   return (
     <FooterContainer>
+      <FloralDecoration className="top-left" />
+      <FloralDecoration className="bottom-right" />
       <FooterContent>
         <Names>
           Marília <span>&</span> Iago
