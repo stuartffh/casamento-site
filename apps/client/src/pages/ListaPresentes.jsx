@@ -79,6 +79,18 @@ const GiftImage = styled.img`
   width: 100%;
   height: 200px;
   object-fit: cover;
+  background-color: #f0f0f0; /* Cor de fundo para quando a imagem não carregar */
+`;
+
+const GiftImageFallback = styled.div`
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  color: #999;
+  font-size: 0.9rem;
 `;
 
 const GiftInfo = styled.div`
@@ -238,6 +250,27 @@ const ListaPresentes = () => {
     alert(`Você selecionou o presente: ${gift.name}`);
   };
   
+  // Componente de imagem com tratamento de erro melhorado
+  const GiftImageWithFallback = ({ src, alt }) => {
+    const [hasError, setHasError] = useState(false);
+    
+    // Se já sabemos que a imagem não existe, renderizamos o fallback diretamente
+    if (hasError) {
+      return <GiftImageFallback>{alt || 'Imagem não disponível'}</GiftImageFallback>;
+    }
+    
+    return (
+      <GiftImage 
+        src={src} 
+        alt={alt}
+        onError={() => {
+          // Em vez de tentar carregar outra imagem, apenas marcamos que houve erro
+          setHasError(true);
+        }}
+      />
+    );
+  };
+  
   const renderContent = () => {
     if (loading) {
       return <LoadingContainer>Carregando presentes...</LoadingContainer>;
@@ -275,13 +308,9 @@ const ListaPresentes = () => {
       <GiftGrid>
         {filteredGifts.map(gift => (
           <GiftCard key={gift.id}>
-            <GiftImage 
-              src={gift.image || '/images/placeholder.jpg'} 
+            <GiftImageWithFallback 
+              src={gift.image || ''} 
               alt={gift.name}
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = '/images/placeholder.jpg';
-              }}
             />
             <GiftInfo>
               <GiftName>{gift.name}</GiftName>

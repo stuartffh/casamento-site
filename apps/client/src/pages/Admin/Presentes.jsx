@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -128,6 +128,20 @@ const PresenteImage = styled.img`
   height: 60px;
   object-fit: cover;
   border-radius: 4px;
+  background-color: #f0f0f0;
+`;
+
+const PresenteImageFallback = styled.div`
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  color: #999;
+  font-size: 0.7rem;
+  border-radius: 4px;
+  text-align: center;
 `;
 
 const ActionButtons = styled.div`
@@ -296,6 +310,7 @@ const ImagePreview = styled.div`
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  background-color: #f0f0f0;
   
   img {
     width: 100%;
@@ -317,6 +332,54 @@ const ImageUploadButton = styled.button`
     background-color: var(--cor-primaria-clara);
   }
 `;
+
+// Componente de imagem com tratamento de erro para a tabela
+const PresenteImageWithFallback = ({ src, alt }) => {
+  const [hasError, setHasError] = useState(false);
+  
+  if (hasError || !src) {
+    return <PresenteImageFallback>{alt || 'Sem imagem'}</PresenteImageFallback>;
+  }
+  
+  return (
+    <PresenteImage 
+      src={src} 
+      alt={alt}
+      onError={() => setHasError(true)}
+    />
+  );
+};
+
+// Componente de preview de imagem com tratamento de erro para o modal
+const ImagePreviewWithFallback = ({ src, alt, onClick }) => {
+  const [hasError, setHasError] = useState(false);
+  
+  if (!src) {
+    return (
+      <ImagePreview onClick={onClick}>
+        <span>Clique para selecionar uma imagem</span>
+      </ImagePreview>
+    );
+  }
+  
+  if (hasError) {
+    return (
+      <ImagePreview onClick={onClick}>
+        <span>Imagem não disponível. Clique para selecionar outra.</span>
+      </ImagePreview>
+    );
+  }
+  
+  return (
+    <ImagePreview onClick={onClick}>
+      <img 
+        src={src} 
+        alt={alt || 'Preview'} 
+        onError={() => setHasError(true)}
+      />
+    </ImagePreview>
+  );
+};
 
 const Presentes = () => {
   const [presentes, setPresentes] = useState([]);
@@ -340,11 +403,8 @@ const Presentes = () => {
   // Referência para o input de arquivo
   const fileInputRef = React.createRef();
   
-  useEffect(() => {
-    fetchPresentes();
-  }, []);
-  
-  const fetchPresentes = async () => {
+  // Usando useCallback para evitar recriação da função a cada render
+  const fetchPresentes = useCallback(async () => {
     try {
       const response = await axios.get('http://localhost:3001/api/presentes');
       setPresentes(response.data);
@@ -352,7 +412,25 @@ const Presentes = () => {
       console.error('Erro ao buscar presentes:', error);
       setError('Erro ao carregar presentes. Tente novamente mais tarde.');
     }
-  };
+  }, []);
+  
+  useEffect(() => {
+    // Usando uma flag para garantir que a chamada só aconteça uma vez
+    let isMounted = true;
+    
+    const loadData = async () => {
+      if (isMounted) {
+        await fetchPresentes();
+      }
+    };
+    
+    loadData();
+    
+    // Cleanup function para evitar memory leaks
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchPresentes]);
   
   const handleOpenModal = (mode, presente = null) => {
     setModalMode(mode);
@@ -600,13 +678,9 @@ const Presentes = () => {
               presentes.map(presente => (
                 <Tr key={presente.id}>
                   <Td>
-                    <PresenteImage 
-                      src={presente.image || '/images/placeholder.jpg'} 
+                    <PresenteImageWithFallback 
+                      src={presente.image} 
                       alt={presente.name}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = '/images/placeholder.jpg';
-                      }}
                     />
                   </Td>
                   <Td>{presente.name}</Td>
@@ -686,13 +760,11 @@ const Presentes = () => {
                 accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
               />
               
-              <ImagePreview onClick={handleImageClick}>
-                {imagePreview ? (
-                  <img src={imagePreview} alt="Preview" />
-                ) : (
-                  <span>Clique para selecionar uma imagem</span>
-                )}
-              </ImagePreview>
+              <ImagePreviewWithFallback
+                src={imagePreview}
+                alt="Preview"
+                onClick={handleImageClick}
+              />
               
               <ImageUploadButton type="button" onClick={handleImageClick}>
                 {imagePreview ? 'Alterar imagem' : 'Selecionar imagem'}
