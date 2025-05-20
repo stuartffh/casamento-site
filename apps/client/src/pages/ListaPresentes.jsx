@@ -4,13 +4,14 @@ import styled from 'styled-components';
 const PageContainer = styled.div`
   width: 100vw;
   max-width: 100%;
-  padding-top: var(--header-height);
+  margin-top: calc(5.5 * var(--header-height));
 `;
 
 const PageContent = styled.div`
   width: 100%;
   margin: 0 auto;
   padding: 60px 20px;
+  
 `;
 
 const SectionTitle = styled.h2`
@@ -213,12 +214,6 @@ const ListaPresentes = () => {
             onClick={() => setActiveTab('online')}
           >
             Lista Online
-          </GiftTab>
-          <GiftTab 
-            active={activeTab === 'fisica'} 
-            onClick={() => setActiveTab('fisica')}
-          >
-            Lista Física
           </GiftTab>
           <GiftTab 
             active={activeTab === 'pix'} 

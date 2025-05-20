@@ -4,7 +4,7 @@ import styled from 'styled-components';
 const PageContainer = styled.div`
   width: 100vw;
   max-width: 100%;
-  padding-top: var(--header-height);
+  margin-top: calc(4.0 * var(--header-height));
 `;
 
 const PageContent = styled.div`
@@ -82,13 +82,11 @@ const Informacoes = () => {
       icon: '🏛️',
       title: 'Cerimônia',
       text: 'A cerimônia será realizada na Igreja Nossa Senhora das Graças, às 16h. Pedimos que os convidados cheguem com 30 minutos de antecedência.',
-      map: true
     },
     {
       icon: '🥂',
       title: 'Recepção',
       text: 'A festa será no Espaço Villa Verde, a partir das 18h. O local conta com estacionamento gratuito para os convidados.',
-      map: true
     },
     {
       icon: '👔',

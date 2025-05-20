@@ -4,7 +4,7 @@ import styled from 'styled-components';
 const PageContainer = styled.div`
   width: 100vw;
   max-width: 100%;
-  padding-top: var(--header-height);
+  margin-top: calc(7.0 * var(--header-height));
 `;
 
 const PageContent = styled.div`

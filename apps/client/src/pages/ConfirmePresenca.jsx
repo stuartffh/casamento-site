@@ -4,7 +4,7 @@ import styled from 'styled-components';
 const PageContainer = styled.div`
   width: 100vw;
   max-width: 100%;
-  padding-top: var(--header-height);
+  margin-top: calc(4.5 * var(--header-height));
 `;
 
 const PageContent = styled.div`
@@ -166,7 +166,6 @@ const ConfirmePresenca = () => {
   
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Aqui seria feita a integração com o backend
     console.log('Form submitted:', formData);
     setSubmitted(true);
   };

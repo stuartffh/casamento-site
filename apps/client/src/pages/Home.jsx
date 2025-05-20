@@ -7,6 +7,7 @@ const HomeContainer = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  margin-top: calc(2 * var(--header-height));
 `;
 
 const HeroSection = styled.section`

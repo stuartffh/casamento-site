@@ -28,66 +28,68 @@ function App() {
   return (
     <>
       <Header />
-      <Routes>
-        {/* Rotas públicas */}
-        <Route path="/" element={<Home />} />
-        <Route path="/nossa-historia" element={<NossaHistoria />} />
-        <Route path="/lista-de-presentes" element={<ListaPresentes />} />
-        <Route path="/confirme-sua-presenca" element={<ConfirmePresenca />} />
-        <Route path="/informacoes" element={<Informacoes />} />
-        <Route path="/album" element={<Album />} />
-        
-        {/* Rotas do Admin */}
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route 
-          path="/admin" 
-          element={
-            <ProtectedRoute>
-              <AdminDashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin/presentes" 
-          element={
-            <ProtectedRoute>
-              <AdminPresentes />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin/config" 
-          element={
-            <ProtectedRoute>
-              <AdminConfig />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin/conteudo" 
-          element={
-            <ProtectedRoute>
-              <AdminConteudo />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin/album" 
-          element={
-            <ProtectedRoute>
-              <AdminAlbum />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin/rsvp" 
-          element={
-            <ProtectedRoute>
-              <AdminRSVP />
-            </ProtectedRoute>
-          } 
-        />
-      </Routes>
+      <main>
+        <Routes>
+          {/* Rotas públicas */}
+          <Route path="/" element={<Home />} />
+          <Route path="/nossa-historia" element={<NossaHistoria />} />
+          <Route path="/lista-de-presentes" element={<ListaPresentes />} />
+          <Route path="/confirme-sua-presenca" element={<ConfirmePresenca />} />
+          <Route path="/informacoes" element={<Informacoes />} />
+          <Route path="/album" element={<Album />} />
+          
+          {/* Rotas do Admin */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/presentes" 
+            element={
+              <ProtectedRoute>
+                <AdminPresentes />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/config" 
+            element={
+              <ProtectedRoute>
+                <AdminConfig />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/conteudo" 
+            element={
+              <ProtectedRoute>
+                <AdminConteudo />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/album" 
+            element={
+              <ProtectedRoute>
+                <AdminAlbum />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/rsvp" 
+            element={
+              <ProtectedRoute>
+                <AdminRSVP />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </main>
       <Footer />
     </>
   );
