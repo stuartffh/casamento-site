@@ -1,158 +1,134 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import axios from 'axios';
 
-const InformacoesContainer = styled.div`
-  max-width: 800px;
+const PageContainer = styled.div`
+  width: 100vw;
+  max-width: 100%;
+  padding-top: var(--header-height);
+`;
+
+const PageContent = styled.div`
+  width: 100%;
   margin: 0 auto;
-  padding: 2rem;
-`;
-
-const PageTitle = styled.h1`
-  font-size: 2.5rem;
-  color: var(--cor-primaria-escura);
-  text-align: center;
-  margin-bottom: 2rem;
-`;
-
-const InfoSection = styled.section`
-  margin-bottom: 3rem;
+  padding: 60px 20px;
 `;
 
 const SectionTitle = styled.h2`
-  font-size: 1.8rem;
-  color: var(--cor-primaria-escura);
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
+  text-align: center;
+  margin-bottom: 50px;
+  position: relative;
   
-  svg {
-    margin-right: 0.5rem;
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 1px;
+    background-color: var(--primary);
   }
 `;
 
-const InfoContent = styled.div`
-  background-color: var(--cor-branco);
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  line-height: 1.8;
+const InfoGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+  width: 100%;
+`;
+
+const InfoCard = styled.div`
+  text-align: center;
+  padding: 40px 30px;
+  background-color: var(--white);
+  border-radius: 5px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
   
-  p {
-    margin-bottom: 1rem;
+  &:hover {
+    transform: translateY(-5px);
   }
-  
-  strong {
-    color: var(--cor-primaria-escura);
-  }
+`;
+
+const InfoIcon = styled.div`
+  font-size: 2.5rem;
+  color: var(--primary);
+  margin-bottom: 20px;
+`;
+
+const InfoTitle = styled.h3`
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  margin-bottom: 15px;
 `;
 
 const MapContainer = styled.div`
-  width: 100%;
-  height: 300px;
-  margin-top: 1.5rem;
-  border-radius: 8px;
+  height: 400px;
+  margin-top: 30px;
+  border-radius: 5px;
   overflow: hidden;
-  
-  iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
 `;
 
 const Informacoes = () => {
-  const [content, setContent] = useState('');
-  
-  useEffect(() => {
-    const fetchContent = async () => {
-      try {
-        const response = await axios.get('http://localhost:3001/api/content/informacoes');
-        if (response.data && response.data.content) {
-          setContent(response.data.content);
-        }
-      } catch (error) {
-        console.error('Erro ao buscar conteúdo:', error);
-      }
-    };
-    
-    fetchContent();
-  }, []);
-  
-  // Extrair seções do conteúdo
-  const sections = {
-    cerimonia: content.match(/📍 Cerimônia:([\s\S]*?)(?=📍 Recepção:|$)/)?.[1]?.trim() || '',
-    recepcao: content.match(/📍 Recepção:([\s\S]*?)(?=👗 Dress Code:|$)/)?.[1]?.trim() || '',
-    dressCode: content.match(/👗 Dress Code:([\s\S]*?)(?=🏨 Hospedagem Sugerida:|$)/)?.[1]?.trim() || '',
-    hospedagem: content.match(/🏨 Hospedagem Sugerida:([\s\S]*?)(?=🚖 Transporte:|$)/)?.[1]?.trim() || '',
-    transporte: content.match(/🚖 Transporte:([\s\S]*?)$/)?.[1]?.trim() || ''
-  };
+  const [infoSections, setInfoSections] = useState([
+    {
+      icon: '🏛️',
+      title: 'Cerimônia',
+      text: 'A cerimônia será realizada na Igreja Nossa Senhora das Graças, às 16h. Pedimos que os convidados cheguem com 30 minutos de antecedência.',
+      map: true
+    },
+    {
+      icon: '🥂',
+      title: 'Recepção',
+      text: 'A festa será no Espaço Villa Verde, a partir das 18h. O local conta com estacionamento gratuito para os convidados.',
+      map: true
+    },
+    {
+      icon: '👔',
+      title: 'Dress Code',
+      text: 'Traje social completo. Homens de terno e mulheres com vestido longo ou midi. Evite cores brancas, off-white e tons muito claros.'
+    },
+    {
+      icon: '🏨',
+      title: 'Hospedagem Sugerida',
+      text: 'Para convidados de fora da cidade, sugerimos o Hotel Royal Palace, que oferece 10% de desconto para os convidados do nosso casamento. Basta mencionar o código "MARILIA&IAGO".'
+    },
+    {
+      icon: '🚗',
+      title: 'Transporte',
+      text: 'Disponibilizaremos transporte da igreja para o local da festa. O ônibus sairá 15 minutos após o término da cerimônia.'
+    }
+  ]);
   
   return (
-    <InformacoesContainer>
-      <PageTitle>Informações</PageTitle>
-      
-      <InfoSection>
-        <SectionTitle>
-          <span role="img" aria-label="Localização">📍</span> Cerimônia
-        </SectionTitle>
-        <InfoContent>
-          <p>{sections.cerimonia}</p>
-          <MapContainer>
-            <iframe 
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3950.3979641959105!2d-34.88133!3d-8.063187!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x7ab18a48ed72541%3A0x6a3a3309a435492a!2sConcatedral%20de%20S%C3%A3o%20Pedro%20dos%20Cl%C3%A9rigos!5e0!3m2!1spt-BR!2sbr!4v1621436289012!5m2!1spt-BR!2sbr" 
-              allowFullScreen="" 
-              loading="lazy"
-              title="Mapa da Cerimônia"
-            ></iframe>
-          </MapContainer>
-        </InfoContent>
-      </InfoSection>
-      
-      <InfoSection>
-        <SectionTitle>
-          <span role="img" aria-label="Localização">📍</span> Recepção
-        </SectionTitle>
-        <InfoContent>
-          <p>{sections.recepcao}</p>
-          <MapContainer>
-            <iframe 
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3950.5923881959105!2d-34.89133!3d-8.093187!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x7ab1be1f89e9b27%3A0x6c8d4201a5e661e3!2sEcomariner!5e0!3m2!1spt-BR!2sbr!4v1621436289012!5m2!1spt-BR!2sbr" 
-              allowFullScreen="" 
-              loading="lazy"
-              title="Mapa da Recepção"
-            ></iframe>
-          </MapContainer>
-        </InfoContent>
-      </InfoSection>
-      
-      <InfoSection>
-        <SectionTitle>
-          <span role="img" aria-label="Vestimenta">👗</span> Dress Code
-        </SectionTitle>
-        <InfoContent>
-          <p>{sections.dressCode}</p>
-        </InfoContent>
-      </InfoSection>
-      
-      <InfoSection>
-        <SectionTitle>
-          <span role="img" aria-label="Hospedagem">🏨</span> Hospedagem Sugerida
-        </SectionTitle>
-        <InfoContent>
-          <p>{sections.hospedagem}</p>
-        </InfoContent>
-      </InfoSection>
-      
-      <InfoSection>
-        <SectionTitle>
-          <span role="img" aria-label="Transporte">🚖</span> Transporte
-        </SectionTitle>
-        <InfoContent>
-          <p>{sections.transporte}</p>
-        </InfoContent>
-      </InfoSection>
-    </InformacoesContainer>
+    <PageContainer className="informacoes-page">
+      <PageContent>
+        <SectionTitle>Informações</SectionTitle>
+        
+        <InfoGrid>
+          {infoSections.map((section, index) => (
+            <InfoCard key={index}>
+              <InfoIcon>{section.icon}</InfoIcon>
+              <InfoTitle>{section.title}</InfoTitle>
+              <p>{section.text}</p>
+              
+              {section.map && (
+                <MapContainer>
+                  Mapa será exibido aqui
+                </MapContainer>
+              )}
+            </InfoCard>
+          ))}
+        </InfoGrid>
+      </PageContent>
+    </PageContainer>
   );
 };
 

@@ -1,236 +1,255 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import axios from 'axios';
 
-const ConfirmePresencaContainer = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
+const PageContainer = styled.div`
+  width: 100vw;
+  max-width: 100%;
+  padding-top: var(--header-height);
 `;
 
-const PageTitle = styled.h1`
-  font-size: 2.5rem;
-  color: var(--cor-primaria-escura);
-  text-align: center;
-  margin-bottom: 2rem;
-`;
-
-const FormContainer = styled.div`
-  background-color: var(--cor-branco);
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 1.5rem;
-`;
-
-const Label = styled.label`
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--cor-primaria-escura);
-`;
-
-const Input = styled.input`
+const PageContent = styled.div`
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--cor-borda);
-  border-radius: 4px;
-  font-size: 1rem;
+  margin: 0 auto;
+  padding: 60px 20px;
+`;
+
+const SectionTitle = styled.h2`
+  text-align: center;
+  margin-bottom: 50px;
+  position: relative;
   
-  &:focus {
-    outline: none;
-    border-color: var(--cor-primaria-clara);
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 1px;
+    background-color: var(--primary);
   }
 `;
 
-const TextArea = styled.textarea`
+const FormContainer = styled.div`
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--cor-borda);
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: var(--white);
+  padding: 50px;
+  border-radius: 5px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  position: relative;
+  
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background-image: url('/images/floral-corner.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    opacity: 0.2;
+  }
+  
+  &::before {
+    top: 20px;
+    left: 20px;
+  }
+  
+  &::after {
+    bottom: 20px;
+    right: 20px;
+    transform: rotate(180deg);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 30px;
+  }
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: 25px;
+`;
+
+const FormLabel = styled.label`
+  display: block;
+  margin-bottom: 10px;
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+`;
+
+const FormInput = styled.input`
+  width: 100%;
+  padding: 15px;
+  border: 1px solid rgba(182, 149, 192, 0.3);
   border-radius: 4px;
+  font-family: var(--font-sans);
   font-size: 1rem;
-  min-height: 100px;
+  transition: border-color 0.3s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+`;
+
+const FormTextarea = styled.textarea`
+  width: 100%;
+  padding: 15px;
+  border: 1px solid rgba(182, 149, 192, 0.3);
+  border-radius: 4px;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  height: 150px;
   resize: vertical;
   
   &:focus {
     outline: none;
-    border-color: var(--cor-primaria-clara);
+    border-color: var(--primary);
   }
 `;
 
-const SubmitButton = styled.button`
-  width: 100%;
-  padding: 1rem;
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
+const FormButton = styled.button`
+  background-color: var(--primary);
+  color: var(--white);
   border: none;
-  border-radius: 4px;
+  padding: 15px 30px;
+  font-family: var(--font-sans);
   font-size: 1.1rem;
-  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  border-radius: 3px;
+  width: 100%;
   
   &:hover {
-    background-color: var(--cor-primaria-clara);
+    background-color: var(--accent);
+  }
+`;
+
+const ThankYouMessage = styled.div`
+  text-align: center;
+  padding: 30px;
+  
+  h3 {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: var(--primary);
   }
   
-  &:disabled {
-    background-color: var(--cor-borda);
-    cursor: not-allowed;
+  p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
   }
-`;
-
-const SuccessMessage = styled.div`
-  background-color: var(--cor-sucesso);
-  color: var(--cor-branco);
-  padding: 1rem;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
-  text-align: center;
-`;
-
-const ErrorMessage = styled.div`
-  background-color: var(--cor-erro);
-  color: var(--cor-branco);
-  padding: 1rem;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
-  text-align: center;
 `;
 
 const ConfirmePresenca = () => {
   const [formData, setFormData] = useState({
     name: '',
-    companions: 0,
     email: '',
     phone: '',
+    guests: '',
     message: ''
   });
   
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [submitError, setSubmitError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
   
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData(prevState => ({
+      ...prevState,
       [name]: value
-    });
+    }));
   };
   
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    
-    if (!formData.name) {
-      setSubmitError('Por favor, informe seu nome.');
-      return;
-    }
-    
-    setIsSubmitting(true);
-    setSubmitError('');
-    
-    try {
-      await axios.post('http://localhost:3001/api/rsvp', formData);
-      setSubmitSuccess(true);
-      setFormData({
-        name: '',
-        companions: 0,
-        email: '',
-        phone: '',
-        message: ''
-      });
-    } catch (error) {
-      console.error('Erro ao enviar RSVP:', error);
-      setSubmitError('Ocorreu um erro ao confirmar sua presença. Por favor, tente novamente mais tarde.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Aqui seria feita a integração com o backend
+    console.log('Form submitted:', formData);
+    setSubmitted(true);
   };
   
   return (
-    <ConfirmePresencaContainer>
-      <PageTitle>Confirme sua Presença</PageTitle>
-      
-      <FormContainer>
-        {submitSuccess && (
-          <SuccessMessage>
-            Sua presença foi confirmada com sucesso! Estamos ansiosos para celebrar com você.
-          </SuccessMessage>
-        )}
+    <PageContainer className="confirme-presenca-page">
+      <PageContent>
+        <SectionTitle>Confirme sua Presença</SectionTitle>
         
-        {submitError && (
-          <ErrorMessage>
-            {submitError}
-          </ErrorMessage>
-        )}
-        
-        <form onSubmit={handleSubmit}>
-          <FormGroup>
-            <Label htmlFor="name">Nome Completo *</Label>
-            <Input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
-          </FormGroup>
-          
-          <FormGroup>
-            <Label htmlFor="companions">Número de Acompanhantes</Label>
-            <Input
-              type="number"
-              id="companions"
-              name="companions"
-              min="0"
-              value={formData.companions}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          
-          <FormGroup>
-            <Label htmlFor="email">E-mail</Label>
-            <Input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          
-          <FormGroup>
-            <Label htmlFor="phone">Telefone</Label>
-            <Input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          
-          <FormGroup>
-            <Label htmlFor="message">Mensagem para os Noivos</Label>
-            <TextArea
-              id="message"
-              name="message"
-              value={formData.message}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          
-          <SubmitButton type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Enviando...' : 'Confirmar Presença'}
-          </SubmitButton>
-        </form>
-      </FormContainer>
-    </ConfirmePresencaContainer>
+        <FormContainer>
+          {submitted ? (
+            <ThankYouMessage>
+              <h3>Obrigado!</h3>
+              <p>Sua presença foi confirmada com sucesso. Estamos ansiosos para celebrar este momento especial com você!</p>
+              <FormButton onClick={() => setSubmitted(false)}>Enviar outra confirmação</FormButton>
+            </ThankYouMessage>
+          ) : (
+            <form onSubmit={handleSubmit}>
+              <FormGroup>
+                <FormLabel htmlFor="name">Nome Completo</FormLabel>
+                <FormInput
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                />
+              </FormGroup>
+              
+              <FormGroup>
+                <FormLabel htmlFor="email">E-mail</FormLabel>
+                <FormInput
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+              </FormGroup>
+              
+              <FormGroup>
+                <FormLabel htmlFor="phone">Telefone</FormLabel>
+                <FormInput
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                />
+              </FormGroup>
+              
+              <FormGroup>
+                <FormLabel htmlFor="guests">Número de Acompanhantes</FormLabel>
+                <FormInput
+                  type="number"
+                  id="guests"
+                  name="guests"
+                  min="0"
+                  value={formData.guests}
+                  onChange={handleChange}
+                  required
+                />
+              </FormGroup>
+              
+              <FormGroup>
+                <FormLabel htmlFor="message">Mensagem (opcional)</FormLabel>
+                <FormTextarea
+                  id="message"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+              
+              <FormButton type="submit">Confirmar Presença</FormButton>
+            </form>
+          )}
+        </FormContainer>
+      </PageContent>
+    </PageContainer>
   );
 };
 

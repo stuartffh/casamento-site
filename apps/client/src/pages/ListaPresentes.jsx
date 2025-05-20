@@ -1,329 +1,265 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import axios from 'axios';
 
-const ListaPresentesContainer = styled.div`
-  max-width: 1200px;
+const PageContainer = styled.div`
+  width: 100vw;
+  max-width: 100%;
+  padding-top: var(--header-height);
+`;
+
+const PageContent = styled.div`
+  width: 100%;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 60px 20px;
 `;
 
-const PageTitle = styled.h1`
-  font-size: 2.5rem;
-  color: var(--cor-primaria-escura);
+const SectionTitle = styled.h2`
   text-align: center;
-  margin-bottom: 2rem;
-`;
-
-const TabsContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid var(--cor-borda);
-`;
-
-const Tab = styled.button`
-  padding: 1rem 2rem;
-  background: none;
-  border: none;
-  font-size: 1.1rem;
-  font-weight: ${props => props.active ? '600' : '400'};
-  color: ${props => props.active ? 'var(--cor-primaria-escura)' : 'var(--cor-texto)'};
+  margin-bottom: 50px;
   position: relative;
-  cursor: pointer;
   
-  &:after {
+  &::after {
     content: '';
     position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background-color: var(--cor-primaria-escura);
-    opacity: ${props => props.active ? '1' : '0'};
-    transition: opacity 0.3s ease;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 1px;
+    background-color: var(--primary);
   }
 `;
 
-const PresentesGrid = styled.div`
+const GiftTabs = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+  border-bottom: 1px solid rgba(182, 149, 192, 0.3);
+  width: 100%;
+`;
+
+const GiftTab = styled.div`
+  padding: 15px 30px;
+  margin: 0 5px;
+  cursor: pointer;
+  border-bottom: 2px solid ${props => props.active ? 'var(--primary)' : 'transparent'};
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+  color: ${props => props.active ? 'var(--primary)' : 'var(--accent)'};
+  
+  &:hover {
+    color: var(--primary);
+  }
+`;
+
+const GiftGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  
-  @media (max-width: 992px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  @media (max-width: 576px) {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+  width: 100%;
 `;
 
-const PresenteCard = styled.div`
-  border-radius: 8px;
+const GiftCard = styled.div`
+  background-color: var(--white);
+  border-radius: 5px;
   overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   }
 `;
 
-const PresenteImage = styled.div`
+const GiftImage = styled.img`
   width: 100%;
   height: 200px;
-  background-image: url(${props => props.src});
-  background-size: cover;
-  background-position: center;
+  object-fit: cover;
 `;
 
-const PresenteInfo = styled.div`
-  padding: 1.5rem;
-  background-color: var(--cor-branco);
+const GiftInfo = styled.div`
+  padding: 25px;
 `;
 
-const PresenteName = styled.h3`
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
-  color: var(--cor-primaria-escura);
+const GiftName = styled.h3`
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  margin-bottom: 10px;
 `;
 
-const PresenteDescription = styled.p`
-  font-size: 0.9rem;
-  color: var(--cor-texto);
-  margin-bottom: 1rem;
-`;
-
-const PresentePrice = styled.p`
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--cor-primaria-escura);
-  margin-bottom: 1rem;
-`;
-
-const PresenteButton = styled.button`
-  width: 100%;
-  padding: 0.75rem;
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
-  border: none;
-  border-radius: 4px;
+const GiftPrice = styled.div`
+  color: var(--accent);
   font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  
-  &:hover {
-    background-color: var(--cor-primaria-clara);
-  }
-  
-  &:disabled {
-    background-color: var(--cor-borda);
-    cursor: not-allowed;
-  }
+  margin-bottom: 20px;
+`;
+
+const GiftButton = styled.button`
+  width: 100%;
+  text-align: center;
 `;
 
 const PixContainer = styled.div`
-  max-width: 500px;
-  margin: 0 auto;
+  background-color: var(--white);
+  border-radius: 5px;
+  padding: 40px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
   text-align: center;
-  padding: 2rem;
-  border: 1px solid var(--cor-borda);
-  border-radius: 8px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
 `;
 
-const QRCode = styled.div`
+const PixQRCode = styled.div`
   width: 200px;
   height: 200px;
-  background-image: url(${props => props.src});
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  margin: 2rem auto;
+  background-color: #f0f0f0;
+  margin: 30px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: #666;
 `;
 
 const PixKey = styled.div`
-  padding: 1rem;
-  background-color: var(--cor-fundo);
-  border-radius: 4px;
-  margin-bottom: 1rem;
-  font-weight: 500;
-`;
-
-const CopyButton = styled.button`
-  padding: 0.5rem 1rem;
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  
-  &:hover {
-    background-color: var(--cor-primaria-clara);
-  }
-`;
-
-const ListaFisicaContainer = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-  text-align: center;
+  background-color: rgba(182, 149, 192, 0.1);
+  padding: 15px;
+  border-radius: 5px;
+  margin: 20px 0;
+  font-family: monospace;
+  font-size: 1.1rem;
 `;
 
 const ListaPresentes = () => {
   const [activeTab, setActiveTab] = useState('online');
-  const [presentes, setPresentes] = useState([]);
-  const [pixConfig, setPixConfig] = useState({
-    key: '',
-    description: ''
-  });
-  
-  useEffect(() => {
-    const fetchPresentes = async () => {
-      try {
-        const response = await axios.get('http://localhost:3001/api/presentes');
-        setPresentes(response.data);
-      } catch (error) {
-        console.error('Erro ao buscar presentes:', error);
-      }
-    };
-    
-    const fetchPixConfig = async () => {
-      try {
-        const response = await axios.get('http://localhost:3001/api/config');
-        if (response.data) {
-          setPixConfig({
-            key: response.data.pixKey || '',
-            description: response.data.pixDescription || ''
-          });
-        }
-      } catch (error) {
-        console.error('Erro ao buscar configuração PIX:', error);
-      }
-    };
-    
-    fetchPresentes();
-    fetchPixConfig();
-  }, []);
-  
-  const handleComprar = async (presente) => {
-    try {
-      const response = await axios.post('http://localhost:3001/api/mercadopago/create-payment', {
-        presentId: presente.id,
-        customerName: 'Convidado', // Em um caso real, seria coletado do usuário
-        customerEmail: 'convidado@exemplo.com' // Em um caso real, seria coletado do usuário
-      });
-      
-      if (response.data && response.data.checkoutUrl) {
-        window.open(response.data.checkoutUrl, '_blank');
-      }
-    } catch (error) {
-      console.error('Erro ao iniciar pagamento:', error);
-      alert('Erro ao processar pagamento. Tente novamente mais tarde.');
+  const [gifts, setGifts] = useState([
+    {
+      id: 1,
+      name: 'Jogo de Panelas',
+      price: 'R$ 450,00',
+      image: '/images/couple-background.png',
+      type: 'online'
+    },
+    {
+      id: 2,
+      name: 'Liquidificador',
+      price: 'R$ 250,00',
+      image: '/images/couple-background.png',
+      type: 'online'
+    },
+    {
+      id: 3,
+      name: 'Jogo de Toalhas',
+      price: 'R$ 180,00',
+      image: '/images/couple-background.png',
+      type: 'online'
+    },
+    {
+      id: 4,
+      name: 'Cafeteira',
+      price: 'R$ 320,00',
+      image: '/images/couple-background.png',
+      type: 'online'
+    },
+    {
+      id: 5,
+      name: 'Jogo de Talheres',
+      price: 'R$ 280,00',
+      image: '/images/couple-background.png',
+      type: 'online'
+    },
+    {
+      id: 6,
+      name: 'Aspirador de Pó',
+      price: 'R$ 550,00',
+      image: '/images/couple-background.png',
+      type: 'online'
+    },
+    {
+      id: 7,
+      name: 'Jogo de Copos',
+      price: 'R$ 200,00',
+      image: '/images/couple-background.png',
+      type: 'fisica'
+    },
+    {
+      id: 8,
+      name: 'Conjunto de Potes',
+      price: 'R$ 150,00',
+      image: '/images/couple-background.png',
+      type: 'fisica'
+    },
+    {
+      id: 9,
+      name: 'Ferro de Passar',
+      price: 'R$ 220,00',
+      image: '/images/couple-background.png',
+      type: 'fisica'
     }
-  };
+  ]);
   
-  const copyPixKey = () => {
-    navigator.clipboard.writeText(pixConfig.key)
-      .then(() => alert('Chave PIX copiada!'))
-      .catch(err => console.error('Erro ao copiar:', err));
-  };
-  
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(price);
-  };
+  const filteredGifts = gifts.filter(gift => gift.type === activeTab);
   
   return (
-    <ListaPresentesContainer>
-      <PageTitle>Lista de Presentes</PageTitle>
-      
-      <TabsContainer>
-        <Tab 
-          active={activeTab === 'online'} 
-          onClick={() => setActiveTab('online')}
-        >
-          Lista Online
-        </Tab>
-        <Tab 
-          active={activeTab === 'fisica'} 
-          onClick={() => setActiveTab('fisica')}
-        >
-          Lista Física
-        </Tab>
-        <Tab 
-          active={activeTab === 'pix'} 
-          onClick={() => setActiveTab('pix')}
-        >
-          PIX
-        </Tab>
-      </TabsContainer>
-      
-      {activeTab === 'online' && (
-        <PresentesGrid>
-          {presentes.map(presente => (
-            <PresenteCard key={presente.id}>
-              <PresenteImage src="/images/placeholder.jpg" />
-              <PresenteInfo>
-                <PresenteName>{presente.name}</PresenteName>
-                <PresenteDescription>{presente.description}</PresenteDescription>
-                <PresentePrice>{formatPrice(presente.price)}</PresentePrice>
-                <PresenteButton 
-                  onClick={() => handleComprar(presente)}
-                  disabled={presente.stock <= 0}
-                >
-                  {presente.stock > 0 ? 'Presentear' : 'Indisponível'}
-                </PresenteButton>
-              </PresenteInfo>
-            </PresenteCard>
-          ))}
-        </PresentesGrid>
-      )}
-      
-      {activeTab === 'fisica' && (
-        <ListaFisicaContainer>
-          <p>
-            Para quem prefere a experiência tradicional, também temos uma lista física nas lojas parceiras:
-          </p>
-          <ul style={{ listStyle: 'none', margin: '2rem 0' }}>
-            <li style={{ marginBottom: '1rem' }}>
-              <strong>Camicado</strong> - Shopping RioMar Recife
-            </li>
-            <li style={{ marginBottom: '1rem' }}>
-              <strong>Tok&Stok</strong> - Shopping Recife
-            </li>
-          </ul>
-          <p>
-            Basta informar o nome dos noivos: <strong>Marília & Iago</strong>
-          </p>
-        </ListaFisicaContainer>
-      )}
-      
-      {activeTab === 'pix' && (
-        <PixContainer>
-          <h3>Contribua com o valor que desejar</h3>
-          <p>
-            Se preferir, você pode nos presentear com uma contribuição via PIX.
-          </p>
-          
-          <QRCode src="/images/placeholder.jpg" />
-          
-          <p><strong>Chave PIX:</strong></p>
-          <PixKey>{pixConfig.key}</PixKey>
-          
-          <CopyButton onClick={copyPixKey}>
-            Copiar Chave PIX
-          </CopyButton>
-          
-          <p style={{ marginTop: '1.5rem' }}>
-            <strong>Descrição:</strong> {pixConfig.description}
-          </p>
-        </PixContainer>
-      )}
-    </ListaPresentesContainer>
+    <PageContainer className="lista-presentes-page">
+      <PageContent>
+        <SectionTitle>Lista de Presentes</SectionTitle>
+        
+        <GiftTabs>
+          <GiftTab 
+            active={activeTab === 'online'} 
+            onClick={() => setActiveTab('online')}
+          >
+            Lista Online
+          </GiftTab>
+          <GiftTab 
+            active={activeTab === 'fisica'} 
+            onClick={() => setActiveTab('fisica')}
+          >
+            Lista Física
+          </GiftTab>
+          <GiftTab 
+            active={activeTab === 'pix'} 
+            onClick={() => setActiveTab('pix')}
+          >
+            PIX
+          </GiftTab>
+        </GiftTabs>
+        
+        {activeTab === 'pix' ? (
+          <PixContainer>
+            <h3>Contribua com o valor que desejar</h3>
+            <p>Você pode nos ajudar com qualquer valor através do PIX abaixo:</p>
+            
+            <PixQRCode>
+              QR Code do PIX
+            </PixQRCode>
+            
+            <p>Ou copie a chave PIX:</p>
+            <PixKey>marilia.iago@casamento.com</PixKey>
+            
+            <p>Agradecemos muito pela sua contribuição!</p>
+          </PixContainer>
+        ) : (
+          <GiftGrid>
+            {filteredGifts.map(gift => (
+              <GiftCard key={gift.id}>
+                <GiftImage src={gift.image} alt={gift.name} />
+                <GiftInfo>
+                  <GiftName>{gift.name}</GiftName>
+                  <GiftPrice>{gift.price}</GiftPrice>
+                  <GiftButton>
+                    {activeTab === 'online' ? 'Presentear' : 'Reservar'}
+                  </GiftButton>
+                </GiftInfo>
+              </GiftCard>
+            ))}
+          </GiftGrid>
+        )}
+      </PageContent>
+    </PageContainer>
   );
 };
 
