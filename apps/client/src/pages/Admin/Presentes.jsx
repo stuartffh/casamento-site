@@ -1,0 +1,591 @@
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import axios from 'axios';
+import { Link } from 'react-router-dom';
+
+const PresentesContainer = styled.div`
+  display: flex;
+  min-height: 100vh;
+`;
+
+const Sidebar = styled.div`
+  width: 250px;
+  background-color: var(--cor-primaria-escura);
+  color: var(--cor-branco);
+  padding: 2rem 0;
+`;
+
+const Logo = styled.div`
+  text-align: center;
+  margin-bottom: 2rem;
+  
+  h1 {
+    font-family: 'Playfair Display', serif;
+    color: var(--cor-branco);
+    font-size: 1.5rem;
+    
+    span {
+      color: var(--cor-primaria-clara);
+    }
+  }
+`;
+
+const NavMenu = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+`;
+
+const NavItem = styled.li`
+  margin-bottom: 0.5rem;
+`;
+
+const NavLink = styled(Link)`
+  display: block;
+  padding: 0.75rem 1.5rem;
+  color: var(--cor-branco);
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+  
+  &:hover, &.active {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  &.active {
+    border-left: 3px solid var(--cor-primaria-clara);
+  }
+`;
+
+const Content = styled.div`
+  flex: 1;
+  padding: 2rem;
+  background-color: var(--cor-fundo);
+`;
+
+const Header = styled.header`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+`;
+
+const PageTitle = styled.h2`
+  color: var(--cor-primaria-escura);
+  font-size: 1.8rem;
+`;
+
+const ActionButton = styled.button`
+  background-color: var(--cor-primaria-escura);
+  color: var(--cor-branco);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  
+  &:hover {
+    background-color: var(--cor-primaria-clara);
+  }
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--cor-branco);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const Th = styled.th`
+  text-align: left;
+  padding: 1rem;
+  background-color: var(--cor-primaria-escura);
+  color: var(--cor-branco);
+`;
+
+const Td = styled.td`
+  padding: 1rem;
+  border-bottom: 1px solid var(--cor-borda);
+  
+  &:last-child {
+    text-align: right;
+  }
+`;
+
+const Tr = styled.tr`
+  &:last-child td {
+    border-bottom: none;
+  }
+  
+  &:hover {
+    background-color: var(--cor-fundo);
+  }
+`;
+
+const PresenteImage = styled.img`
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+`;
+
+const ActionButtons = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+`;
+
+const EditButton = styled.button`
+  background-color: var(--cor-primaria-clara);
+  color: var(--cor-branco);
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const DeleteButton = styled.button`
+  background-color: var(--cor-erro);
+  color: var(--cor-branco);
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const Modal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: ${props => props.show ? 'flex' : 'none'};
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background-color: var(--cor-branco);
+  border-radius: 8px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+`;
+
+const ModalTitle = styled.h3`
+  color: var(--cor-primaria-escura);
+  font-size: 1.5rem;
+  margin: 0;
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--cor-texto);
+  
+  &:hover {
+    color: var(--cor-primaria-escura);
+  }
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const Label = styled.label`
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--cor-primaria-escura);
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: 4px;
+  font-size: 1rem;
+  
+  &:focus {
+    outline: none;
+    border-color: var(--cor-primaria-clara);
+  }
+`;
+
+const TextArea = styled.textarea`
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: 4px;
+  font-size: 1rem;
+  min-height: 100px;
+  resize: vertical;
+  
+  &:focus {
+    outline: none;
+    border-color: var(--cor-primaria-clara);
+  }
+`;
+
+const SubmitButton = styled.button`
+  padding: 0.75rem 1.5rem;
+  background-color: var(--cor-primaria-escura);
+  color: var(--cor-branco);
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  
+  &:hover {
+    background-color: var(--cor-primaria-clara);
+  }
+  
+  &:disabled {
+    background-color: var(--cor-borda);
+    cursor: not-allowed;
+  }
+`;
+
+const SuccessMessage = styled.div`
+  background-color: var(--cor-sucesso);
+  color: var(--cor-branco);
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+`;
+
+const ErrorMessage = styled.div`
+  background-color: var(--cor-erro);
+  color: var(--cor-branco);
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+`;
+
+const Presentes = () => {
+  const [presentes, setPresentes] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState('add'); // 'add' ou 'edit'
+  const [currentPresente, setCurrentPresente] = useState({
+    id: null,
+    name: '',
+    description: '',
+    price: '',
+    image: '',
+    stock: 1
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
+  
+  useEffect(() => {
+    fetchPresentes();
+  }, []);
+  
+  const fetchPresentes = async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/api/presentes');
+      setPresentes(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar presentes:', error);
+      setError('Erro ao carregar presentes. Tente novamente mais tarde.');
+    }
+  };
+  
+  const handleOpenModal = (mode, presente = null) => {
+    setModalMode(mode);
+    
+    if (mode === 'edit' && presente) {
+      setCurrentPresente({
+        id: presente.id,
+        name: presente.name,
+        description: presente.description || '',
+        price: presente.price.toString(),
+        image: presente.image || '',
+        stock: presente.stock
+      });
+    } else {
+      setCurrentPresente({
+        id: null,
+        name: '',
+        description: '',
+        price: '',
+        image: '',
+        stock: 1
+      });
+    }
+    
+    setShowModal(true);
+  };
+  
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSuccess('');
+    setError('');
+  };
+  
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentPresente({
+      ...currentPresente,
+      [name]: value
+    });
+  };
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!currentPresente.name || !currentPresente.price) {
+      setError('Nome e preço são obrigatórios.');
+      return;
+    }
+    
+    setIsLoading(true);
+    setSuccess('');
+    setError('');
+    
+    try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
+      
+      if (modalMode === 'add') {
+        await axios.post('http://localhost:3001/api/presentes', currentPresente, { headers });
+        setSuccess('Presente adicionado com sucesso!');
+      } else {
+        await axios.put(`http://localhost:3001/api/presentes/${currentPresente.id}`, currentPresente, { headers });
+        setSuccess('Presente atualizado com sucesso!');
+      }
+      
+      fetchPresentes();
+      setTimeout(() => {
+        handleCloseModal();
+      }, 1500);
+    } catch (error) {
+      console.error('Erro ao salvar presente:', error);
+      setError('Erro ao salvar presente. Tente novamente mais tarde.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleDelete = async (id) => {
+    if (!window.confirm('Tem certeza que deseja excluir este presente?')) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:3001/api/presentes/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      fetchPresentes();
+      setSuccess('Presente excluído com sucesso!');
+    } catch (error) {
+      console.error('Erro ao excluir presente:', error);
+      setError('Erro ao excluir presente. Tente novamente mais tarde.');
+    }
+  };
+  
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(price);
+  };
+  
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/admin/login';
+  };
+  
+  return (
+    <PresentesContainer>
+      <Sidebar>
+        <Logo>
+          <h1>
+            Marília <span>&</span> Iago
+          </h1>
+        </Logo>
+        
+        <NavMenu>
+          <NavItem>
+            <NavLink to="/admin">Dashboard</NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink to="/admin/presentes" className="active">Presentes</NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink to="/admin/config">Configurações</NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink to="/admin/conteudo">Conteúdo</NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink to="/admin/album">Álbum</NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink to="/admin/rsvp">RSVPs</NavLink>
+          </NavItem>
+        </NavMenu>
+      </Sidebar>
+      
+      <Content>
+        <Header>
+          <PageTitle>Gerenciar Presentes</PageTitle>
+          <div>
+            <ActionButton onClick={() => handleOpenModal('add')}>Adicionar Presente</ActionButton>
+            <ActionButton onClick={handleLogout} style={{ marginLeft: '1rem', background: 'none', border: '1px solid var(--cor-primaria-escura)', color: 'var(--cor-primaria-escura)' }}>Sair</ActionButton>
+          </div>
+        </Header>
+        
+        {success && <SuccessMessage>{success}</SuccessMessage>}
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        
+        <Table>
+          <thead>
+            <tr>
+              <Th>Imagem</Th>
+              <Th>Nome</Th>
+              <Th>Preço</Th>
+              <Th>Estoque</Th>
+              <Th>Ações</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {presentes.length > 0 ? (
+              presentes.map(presente => (
+                <Tr key={presente.id}>
+                  <Td>
+                    <PresenteImage src={presente.image || '/images/placeholder.jpg'} alt={presente.name} />
+                  </Td>
+                  <Td>{presente.name}</Td>
+                  <Td>{formatPrice(presente.price)}</Td>
+                  <Td>{presente.stock}</Td>
+                  <Td>
+                    <ActionButtons>
+                      <EditButton onClick={() => handleOpenModal('edit', presente)}>Editar</EditButton>
+                      <DeleteButton onClick={() => handleDelete(presente.id)}>Excluir</DeleteButton>
+                    </ActionButtons>
+                  </Td>
+                </Tr>
+              ))
+            ) : (
+              <Tr>
+                <Td colSpan="5" style={{ textAlign: 'center' }}>Nenhum presente cadastrado.</Td>
+              </Tr>
+            )}
+          </tbody>
+        </Table>
+      </Content>
+      
+      <Modal show={showModal} onClick={handleCloseModal}>
+        <ModalContent onClick={e => e.stopPropagation()}>
+          <ModalHeader>
+            <ModalTitle>{modalMode === 'add' ? 'Adicionar Presente' : 'Editar Presente'}</ModalTitle>
+            <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
+          </ModalHeader>
+          
+          {success && <SuccessMessage>{success}</SuccessMessage>}
+          {error && <ErrorMessage>{error}</ErrorMessage>}
+          
+          <form onSubmit={handleSubmit}>
+            <FormGroup>
+              <Label htmlFor="name">Nome *</Label>
+              <Input
+                type="text"
+                id="name"
+                name="name"
+                value={currentPresente.name}
+                onChange={handleChange}
+                required
+              />
+            </FormGroup>
+            
+            <FormGroup>
+              <Label htmlFor="description">Descrição</Label>
+              <TextArea
+                id="description"
+                name="description"
+                value={currentPresente.description}
+                onChange={handleChange}
+              />
+            </FormGroup>
+            
+            <FormGroup>
+              <Label htmlFor="price">Preço *</Label>
+              <Input
+                type="number"
+                id="price"
+                name="price"
+                value={currentPresente.price}
+                onChange={handleChange}
+                step="0.01"
+                min="0"
+                required
+              />
+            </FormGroup>
+            
+            <FormGroup>
+              <Label htmlFor="image">URL da Imagem</Label>
+              <Input
+                type="text"
+                id="image"
+                name="image"
+                value={currentPresente.image}
+                onChange={handleChange}
+                placeholder="/images/placeholder.jpg"
+              />
+            </FormGroup>
+            
+            <FormGroup>
+              <Label htmlFor="stock">Estoque</Label>
+              <Input
+                type="number"
+                id="stock"
+                name="stock"
+                value={currentPresente.stock}
+                onChange={handleChange}
+                min="0"
+              />
+            </FormGroup>
+            
+            <SubmitButton type="submit" disabled={isLoading}>
+              {isLoading ? 'Salvando...' : 'Salvar Presente'}
+            </SubmitButton>
+          </form>
+        </ModalContent>
+      </Modal>
+    </PresentesContainer>
+  );
+};
+
+export default Presentes;
