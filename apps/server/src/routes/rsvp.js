@@ -45,6 +45,32 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Excluir RSVP (protegido)
+router.delete('/:id', protectNonGetRoutes, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Verificar se o RSVP existe
+    const rsvp = await prisma.rSVP.findUnique({
+      where: { id: Number(id) }
+    });
+    
+    if (!rsvp) {
+      return res.status(404).json({ message: 'RSVP não encontrado' });
+    }
+    
+    // Excluir o RSVP
+    await prisma.rSVP.delete({
+      where: { id: Number(id) }
+    });
+    
+    res.json({ message: 'RSVP excluído com sucesso' });
+  } catch (error) {
+    console.error('Erro ao excluir RSVP:', error);
+    res.status(500).json({ message: 'Erro no servidor' });
+  }
+});
+
 // Exportar RSVPs para CSV (protegido)
 router.get('/export', protectNonGetRoutes, async (req, res) => {
   try {

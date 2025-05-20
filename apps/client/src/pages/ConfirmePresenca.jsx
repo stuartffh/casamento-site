@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import axios from 'axios';
 
 const PageContainer = styled.div`
   width: 100vw;
@@ -126,6 +127,11 @@ const FormButton = styled.button`
   &:hover {
     background-color: var(--accent);
   }
+  
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
 `;
 
 const ThankYouMessage = styled.div`
@@ -145,16 +151,27 @@ const ThankYouMessage = styled.div`
   }
 `;
 
+const ErrorMessage = styled.div`
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: center;
+`;
+
 const ConfirmePresenca = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    guests: '',
+    companions: 0,
     message: ''
   });
   
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -164,10 +181,31 @@ const ConfirmePresenca = () => {
     }));
   };
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    setSubmitted(true);
+    setLoading(true);
+    setError('');
+    
+    try {
+      // Integração com o backend - URL base corrigida
+      await axios.post('http://localhost:3001/api/rsvp', {
+        name: formData.name,
+        companions: parseInt(formData.companions) || 0,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message
+      });
+      
+      setSubmitted(true);
+    } catch (error) {
+      console.error('Erro ao enviar confirmação:', error);
+      setError(
+        error.response?.data?.message || 
+        'Ocorreu um erro ao enviar sua confirmação. Por favor, tente novamente.'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
   
   return (
@@ -176,16 +214,27 @@ const ConfirmePresenca = () => {
         <SectionTitle>Confirme sua Presença</SectionTitle>
         
         <FormContainer>
+          {error && <ErrorMessage>{error}</ErrorMessage>}
+          
           {submitted ? (
             <ThankYouMessage>
               <h3>Obrigado!</h3>
               <p>Sua presença foi confirmada com sucesso. Estamos ansiosos para celebrar este momento especial com você!</p>
-              <FormButton onClick={() => setSubmitted(false)}>Enviar outra confirmação</FormButton>
+              <FormButton onClick={() => {
+                setSubmitted(false);
+                setFormData({
+                  name: '',
+                  email: '',
+                  phone: '',
+                  companions: 0,
+                  message: ''
+                });
+              }}>Enviar outra confirmação</FormButton>
             </ThankYouMessage>
           ) : (
             <form onSubmit={handleSubmit}>
               <FormGroup>
-                <FormLabel htmlFor="name">Nome Completo</FormLabel>
+                <FormLabel htmlFor="name">Nome Completo*</FormLabel>
                 <FormInput
                   type="text"
                   id="name"
@@ -204,7 +253,6 @@ const ConfirmePresenca = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  required
                 />
               </FormGroup>
               
@@ -216,18 +264,17 @@ const ConfirmePresenca = () => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  required
                 />
               </FormGroup>
               
               <FormGroup>
-                <FormLabel htmlFor="guests">Número de Acompanhantes</FormLabel>
+                <FormLabel htmlFor="companions">Número de Acompanhantes*</FormLabel>
                 <FormInput
                   type="number"
-                  id="guests"
-                  name="guests"
+                  id="companions"
+                  name="companions"
                   min="0"
-                  value={formData.guests}
+                  value={formData.companions}
                   onChange={handleChange}
                   required
                 />
@@ -243,7 +290,9 @@ const ConfirmePresenca = () => {
                 />
               </FormGroup>
               
-              <FormButton type="submit">Confirmar Presença</FormButton>
+              <FormButton type="submit" disabled={loading}>
+                {loading ? 'Enviando...' : 'Confirmar Presença'}
+              </FormButton>
             </form>
           )}
         </FormContainer>
