@@ -285,6 +285,39 @@ const ErrorMessage = styled.div`
   margin-bottom: 1.5rem;
 `;
 
+const ImagePreview = styled.div`
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 200px;
+  height: 150px;
+  border: 1px dashed var(--cor-borda);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+const ImageUploadButton = styled.button`
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--cor-primaria-escura);
+  color: var(--cor-branco);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: var(--cor-primaria-clara);
+  }
+`;
+
 const Presentes = () => {
   const [presentes, setPresentes] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -300,6 +333,12 @@ const Presentes = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  
+  // Referência para o input de arquivo
+  const fileInputRef = React.createRef();
   
   useEffect(() => {
     fetchPresentes();
@@ -327,6 +366,7 @@ const Presentes = () => {
         image: presente.image || '',
         stock: presente.stock
       });
+      setImagePreview(presente.image || '');
     } else {
       setCurrentPresente({
         id: null,
@@ -336,8 +376,12 @@ const Presentes = () => {
         image: '',
         stock: 1
       });
+      setImagePreview('');
     }
     
+    setImageFile(null);
+    setSuccess('');
+    setError('');
     setShowModal(true);
   };
   
@@ -353,6 +397,63 @@ const Presentes = () => {
       ...currentPresente,
       [name]: value
     });
+  };
+  
+  const handleImageClick = () => {
+    fileInputRef.current.click();
+  };
+  
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Verificar tipo de arquivo
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Tipo de arquivo não suportado. Apenas imagens são permitidas.');
+      return;
+    }
+    
+    // Verificar tamanho do arquivo (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Arquivo muito grande. O tamanho máximo é 5MB.');
+      return;
+    }
+    
+    setImageFile(file);
+    
+    // Criar preview da imagem
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+  
+  const uploadImage = async () => {
+    if (!imageFile) return null;
+    
+    try {
+      setUploadingImage(true);
+      
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      
+      const token = localStorage.getItem('token');
+      const response = await axios.post('http://localhost:3001/api/presentes/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      return response.data.url;
+    } catch (error) {
+      console.error('Erro ao fazer upload da imagem:', error);
+      throw new Error('Erro ao fazer upload da imagem. Tente novamente.');
+    } finally {
+      setUploadingImage(false);
+    }
   };
   
   const handleSubmit = async (e) => {
@@ -373,11 +474,25 @@ const Presentes = () => {
         Authorization: `Bearer ${token}`
       };
       
+      // Fazer upload da imagem se houver uma nova
+      let imageUrl = currentPresente.image;
+      if (imageFile) {
+        imageUrl = await uploadImage();
+        if (!imageUrl) {
+          throw new Error('Erro ao fazer upload da imagem.');
+        }
+      }
+      
+      const presenteData = {
+        ...currentPresente,
+        image: imageUrl
+      };
+      
       if (modalMode === 'add') {
-        await axios.post('http://localhost:3001/api/presentes', currentPresente, { headers });
+        await axios.post('http://localhost:3001/api/presentes', presenteData, { headers });
         setSuccess('Presente adicionado com sucesso!');
       } else {
-        await axios.put(`http://localhost:3001/api/presentes/${currentPresente.id}`, currentPresente, { headers });
+        await axios.put(`http://localhost:3001/api/presentes/${currentPresente.id}`, presenteData, { headers });
         setSuccess('Presente atualizado com sucesso!');
       }
       
@@ -387,7 +502,7 @@ const Presentes = () => {
       }, 1500);
     } catch (error) {
       console.error('Erro ao salvar presente:', error);
-      setError('Erro ao salvar presente. Tente novamente mais tarde.');
+      setError(error.message || 'Erro ao salvar presente. Tente novamente mais tarde.');
     } finally {
       setIsLoading(false);
     }
@@ -485,7 +600,14 @@ const Presentes = () => {
               presentes.map(presente => (
                 <Tr key={presente.id}>
                   <Td>
-                    <PresenteImage src={presente.image || '/images/placeholder.jpg'} alt={presente.name} />
+                    <PresenteImage 
+                      src={presente.image || '/images/placeholder.jpg'} 
+                      alt={presente.name}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/images/placeholder.jpg';
+                      }}
+                    />
                   </Td>
                   <Td>{presente.name}</Td>
                   <Td>{formatPrice(presente.price)}</Td>
@@ -555,15 +677,26 @@ const Presentes = () => {
             </FormGroup>
             
             <FormGroup>
-              <Label htmlFor="image">URL da Imagem</Label>
-              <Input
-                type="text"
-                id="image"
-                name="image"
-                value={currentPresente.image}
-                onChange={handleChange}
-                placeholder="/images/placeholder.jpg"
+              <Label>Imagem</Label>
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                onChange={handleImageChange}
+                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
               />
+              
+              <ImagePreview onClick={handleImageClick}>
+                {imagePreview ? (
+                  <img src={imagePreview} alt="Preview" />
+                ) : (
+                  <span>Clique para selecionar uma imagem</span>
+                )}
+              </ImagePreview>
+              
+              <ImageUploadButton type="button" onClick={handleImageClick}>
+                {imagePreview ? 'Alterar imagem' : 'Selecionar imagem'}
+              </ImageUploadButton>
             </FormGroup>
             
             <FormGroup>
@@ -578,8 +711,8 @@ const Presentes = () => {
               />
             </FormGroup>
             
-            <SubmitButton type="submit" disabled={isLoading}>
-              {isLoading ? 'Salvando...' : 'Salvar Presente'}
+            <SubmitButton type="submit" disabled={isLoading || uploadingImage}>
+              {isLoading || uploadingImage ? 'Salvando...' : 'Salvar Presente'}
             </SubmitButton>
           </form>
         </ModalContent>

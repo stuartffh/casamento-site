@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
+import axios from 'axios';
 
 const PageContainer = styled.div`
   width: 100vw;
@@ -99,6 +100,18 @@ const GiftPrice = styled.div`
 const GiftButton = styled.button`
   width: 100%;
   text-align: center;
+  background-color: var(--primary);
+  color: var(--white);
+  border: none;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  
+  &:hover {
+    background-color: var(--accent);
+  }
 `;
 
 const PixContainer = styled.div`
@@ -133,75 +146,155 @@ const PixKey = styled.div`
   font-size: 1.1rem;
 `;
 
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  width: 100%;
+  font-size: 1.2rem;
+  color: var(--accent);
+`;
+
+const ErrorContainer = styled.div`
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+  margin: 20px auto;
+  max-width: 800px;
+`;
+
 const ListaPresentes = () => {
   const [activeTab, setActiveTab] = useState('online');
-  const [gifts, setGifts] = useState([
-    {
-      id: 1,
-      name: 'Jogo de Panelas',
-      price: 'R$ 450,00',
-      image: '/images/couple-background.png',
-      type: 'online'
-    },
-    {
-      id: 2,
-      name: 'Liquidificador',
-      price: 'R$ 250,00',
-      image: '/images/couple-background.png',
-      type: 'online'
-    },
-    {
-      id: 3,
-      name: 'Jogo de Toalhas',
-      price: 'R$ 180,00',
-      image: '/images/couple-background.png',
-      type: 'online'
-    },
-    {
-      id: 4,
-      name: 'Cafeteira',
-      price: 'R$ 320,00',
-      image: '/images/couple-background.png',
-      type: 'online'
-    },
-    {
-      id: 5,
-      name: 'Jogo de Talheres',
-      price: 'R$ 280,00',
-      image: '/images/couple-background.png',
-      type: 'online'
-    },
-    {
-      id: 6,
-      name: 'Aspirador de Pó',
-      price: 'R$ 550,00',
-      image: '/images/couple-background.png',
-      type: 'online'
-    },
-    {
-      id: 7,
-      name: 'Jogo de Copos',
-      price: 'R$ 200,00',
-      image: '/images/couple-background.png',
-      type: 'fisica'
-    },
-    {
-      id: 8,
-      name: 'Conjunto de Potes',
-      price: 'R$ 150,00',
-      image: '/images/couple-background.png',
-      type: 'fisica'
-    },
-    {
-      id: 9,
-      name: 'Ferro de Passar',
-      price: 'R$ 220,00',
-      image: '/images/couple-background.png',
-      type: 'fisica'
-    }
-  ]);
+  const [gifts, setGifts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [pixInfo, setPixInfo] = useState({
+    key: 'marilia.iago@casamento.com',
+    description: 'Presente de Casamento'
+  });
   
-  const filteredGifts = gifts.filter(gift => gift.type === activeTab);
+  // Usando useCallback para evitar recriação das funções a cada render
+  const fetchPresentes = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('http://localhost:3001/api/presentes');
+      setGifts(response.data);
+      setError('');
+    } catch (error) {
+      console.error('Erro ao buscar presentes:', error);
+      setError('Não foi possível carregar a lista de presentes. Por favor, tente novamente mais tarde.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  
+  const fetchPixInfo = useCallback(async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/api/config');
+      if (response.data && response.data.pixKey) {
+        setPixInfo({
+          key: response.data.pixKey,
+          description: response.data.pixDescription || 'Presente de Casamento'
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao buscar informações do PIX:', error);
+      // Mantém as informações padrão do PIX em caso de erro
+    }
+  }, []);
+  
+  // useEffect com dependências explícitas
+  useEffect(() => {
+    // Usando uma flag para garantir que as chamadas só aconteçam uma vez
+    let isMounted = true;
+    
+    const loadData = async () => {
+      if (isMounted) {
+        await fetchPresentes();
+        await fetchPixInfo();
+      }
+    };
+    
+    loadData();
+    
+    // Cleanup function para evitar memory leaks
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchPresentes, fetchPixInfo]);
+  
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(price);
+  };
+  
+  const handlePresentear = (gift) => {
+    // Implementação futura: integração com checkout
+    alert(`Você selecionou o presente: ${gift.name}`);
+  };
+  
+  const renderContent = () => {
+    if (loading) {
+      return <LoadingContainer>Carregando presentes...</LoadingContainer>;
+    }
+    
+    if (error) {
+      return <ErrorContainer>{error}</ErrorContainer>;
+    }
+    
+    if (activeTab === 'pix') {
+      return (
+        <PixContainer>
+          <h3>Contribua com o valor que desejar</h3>
+          <p>Você pode nos ajudar com qualquer valor através do PIX abaixo:</p>
+          
+          <PixQRCode>
+            QR Code do PIX
+          </PixQRCode>
+          
+          <p>Ou copie a chave PIX:</p>
+          <PixKey>{pixInfo.key}</PixKey>
+          
+          <p>Agradecemos muito pela sua contribuição!</p>
+        </PixContainer>
+      );
+    }
+    
+    const filteredGifts = gifts.filter(gift => gift.stock > 0);
+    
+    if (filteredGifts.length === 0) {
+      return <ErrorContainer>Nenhum presente disponível no momento.</ErrorContainer>;
+    }
+    
+    return (
+      <GiftGrid>
+        {filteredGifts.map(gift => (
+          <GiftCard key={gift.id}>
+            <GiftImage 
+              src={gift.image || '/images/placeholder.jpg'} 
+              alt={gift.name}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = '/images/placeholder.jpg';
+              }}
+            />
+            <GiftInfo>
+              <GiftName>{gift.name}</GiftName>
+              <GiftPrice>{formatPrice(gift.price)}</GiftPrice>
+              <GiftButton onClick={() => handlePresentear(gift)}>
+                Presentear
+              </GiftButton>
+            </GiftInfo>
+          </GiftCard>
+        ))}
+      </GiftGrid>
+    );
+  };
   
   return (
     <PageContainer className="lista-presentes-page">
@@ -223,36 +316,7 @@ const ListaPresentes = () => {
           </GiftTab>
         </GiftTabs>
         
-        {activeTab === 'pix' ? (
-          <PixContainer>
-            <h3>Contribua com o valor que desejar</h3>
-            <p>Você pode nos ajudar com qualquer valor através do PIX abaixo:</p>
-            
-            <PixQRCode>
-              QR Code do PIX
-            </PixQRCode>
-            
-            <p>Ou copie a chave PIX:</p>
-            <PixKey>marilia.iago@casamento.com</PixKey>
-            
-            <p>Agradecemos muito pela sua contribuição!</p>
-          </PixContainer>
-        ) : (
-          <GiftGrid>
-            {filteredGifts.map(gift => (
-              <GiftCard key={gift.id}>
-                <GiftImage src={gift.image} alt={gift.name} />
-                <GiftInfo>
-                  <GiftName>{gift.name}</GiftName>
-                  <GiftPrice>{gift.price}</GiftPrice>
-                  <GiftButton>
-                    {activeTab === 'online' ? 'Presentear' : 'Reservar'}
-                  </GiftButton>
-                </GiftInfo>
-              </GiftCard>
-            ))}
-          </GiftGrid>
-        )}
+        {renderContent()}
       </PageContent>
     </PageContainer>
   );
