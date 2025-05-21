@@ -27,7 +27,8 @@ RUN mkdir -p public/uploads/album
 RUN mkdir -p public/uploads/background
 
 # Copiar build do client para o diretório público do servidor
-COPY --from=0 /app/apps/client/dist /app/apps/server/public/build
+# Corrigido para evitar referência circular
+RUN cp -r /app/apps/client/dist/* /app/apps/server/public/build/
 
 # Copiar o banco de dados SQLite (se existir)
 COPY database.sqlite /app/apps/server/
