@@ -13,6 +13,7 @@ const mercadoPagoRoutes = require('./routes/mercadopago');
 const albumRoutes = require('./routes/album');
 const contentRoutes = require('./routes/content');
 const storyRoutes = require('./routes/storyEvents');
+const backgroundImagesRoutes = require('./routes/backgroundImages');
 
 // Middlewares
 const { authenticateJWT } = require('./middleware/auth');
@@ -37,6 +38,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/rsvp', rsvpRoutes);
 app.use('/api/mercadopago/webhook', mercadoPagoRoutes);
 app.use('/api/config', configRoutes); // Agora totalmente pública, proteção será feita internamente
+app.use('/api/background-images', backgroundImagesRoutes); // Parcialmente protegida (GET público)
 
 // Rotas protegidas
 app.use('/api/presentes', presentesRoutes); // Parcialmente protegida (GET público)

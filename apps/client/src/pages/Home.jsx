@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { useConfig } from '../contexts/ConfigContext';
+import axios from 'axios';
 
 const HomeContainer = styled.div`
   width: 100%;
@@ -12,7 +13,6 @@ const HomeContainer = styled.div`
 const HeroSection = styled.section`
   height: calc(100vh - var(--header-height));
   width: 100%;
-  background-image: url('/images/couple-background.png');
   background-size: cover;
   background-position: center;
   display: flex;
@@ -25,6 +25,20 @@ const HeroSection = styled.section`
   overflow: hidden;
 `;
 
+const BackgroundSlide = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url(${props => props.image});
+  background-size: cover;
+  background-position: center;
+  opacity: ${props => props.active ? 1 : 0};
+  transition: opacity 1s ease-in-out;
+  z-index: 0;
+`;
+
 const HeroOverlay = styled.div`
   position: absolute;
   top: 0;
@@ -32,11 +46,12 @@ const HeroOverlay = styled.div`
   width: 100%;
   height: 100%;
   background: linear-gradient(to bottom, rgba(80, 52, 89, 0.5), rgba(66, 89, 67, 0.5));
+  z-index: 1;
 `;
 
 const HeroContent = styled.div`
   position: relative;
-  z-index: 1;
+  z-index: 2;
   width: 100%;
   max-width: var(--container-width);
   padding: 0 var(--container-padding);
@@ -167,13 +182,63 @@ const HeroButton = styled(Link)`
 `;
 
 const Home = () => {
-  const [days, setDays] = React.useState(0);
-  const [hours, setHours] = React.useState(0);
-  const [minutes, setMinutes] = React.useState(0);
-  const [seconds, setSeconds] = React.useState(0);
+  const [days, setDays] = useState(0);
+  const [hours, setHours] = useState(0);
+  const [minutes, setMinutes] = useState(0);
+  const [seconds, setSeconds] = useState(0);
   const { config, formatWeddingDate } = useConfig();
   
-  React.useEffect(() => {
+  // Estado para o slideshow
+  const [backgroundImages, setBackgroundImages] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Buscar imagens de fundo ativas
+  useEffect(() => {
+    const fetchBackgroundImages = async () => {
+      try {
+        const response = await axios.get('http://localhost:3001/api/background-images/active');
+        if (response.data && response.data.length > 0) {
+          setBackgroundImages(response.data);
+        } else {
+          // Fallback para imagem padrão se não houver imagens cadastradas
+          setBackgroundImages([{ 
+            id: 0, 
+            path: '/images/couple-background.png',
+            active: true
+          }]);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar imagens de fundo:', error);
+        // Fallback para imagem padrão em caso de erro
+        setBackgroundImages([{ 
+          id: 0, 
+          path: '/images/couple-background.png',
+          active: true
+        }]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchBackgroundImages();
+  }, []);
+  
+  // Rotação automática das imagens a cada 3 segundos
+  useEffect(() => {
+    if (backgroundImages.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentImageIndex(prevIndex => 
+        prevIndex === backgroundImages.length - 1 ? 0 : prevIndex + 1
+      );
+    }, 3000);
+    
+    return () => clearInterval(interval);
+  }, [backgroundImages]);
+  
+  // Countdown para a data do casamento
+  useEffect(() => {
     // Usar a data do casamento do contexto, ou fallback para uma data padrão
     const weddingDateStr = config.weddingDate || 'September 20, 2025 19:00:00';
     const weddingDate = new Date(weddingDateStr).getTime();
@@ -226,9 +291,18 @@ const Home = () => {
   return (
     <HomeContainer>
       <HeroSection>
+        {/* Slideshow de imagens de fundo */}
+        {backgroundImages.map((image, index) => (
+          <BackgroundSlide
+            key={image.id}
+            image={`http://localhost:3001${image.path}`}
+            active={index === currentImageIndex}
+          />
+        ))}
+        
         <HeroOverlay />
         <HeroContent>
-          <HeroTitle className="fade-in">{config.siteTitle}</HeroTitle>
+          <HeroTitle className="fade-in">{config.siteTitle || 'Marília & Iago'}</HeroTitle>
           <HeroSubtitle className="fade-in delay-1">
             Estamos muito felizes em ter você aqui!
           </HeroSubtitle>

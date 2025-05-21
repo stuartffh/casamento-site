@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import {
   AdminContainer,
   Sidebar,
@@ -20,6 +21,7 @@ import {
   ErrorMessage
 } from '../../styles/AdminStyles';
 import styled from 'styled-components';
+import { useConfig } from '../../contexts/ConfigContext';
 
 const ConfigContainer = styled.div`
   background-color: var(--white);
@@ -93,24 +95,145 @@ const ImageUploadButton = styled.button`
   }
 `;
 
+const BackgroundImagesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+`;
+
+const BackgroundImageItem = styled.div`
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #f0f0f0;
+  aspect-ratio: 16/9;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.3s ease;
+    opacity: ${props => props.active ? 1 : 0.5};
+  }
+  
+  &:hover {
+    .image-actions {
+      opacity: 1;
+    }
+  }
+`;
+
+const ImageActions = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  
+  button {
+    margin: 0.25rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    
+    &.delete-btn {
+      background-color: #e74c3c;
+      color: white;
+    }
+    
+    &.toggle-btn {
+      background-color: ${props => props.active ? '#e67e22' : '#2ecc71'};
+      color: white;
+    }
+  }
+`;
+
+const DragHandle = styled.div`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  
+  &:active {
+    cursor: grabbing;
+  }
+  
+  &::before {
+    content: "≡";
+    font-size: 16px;
+    color: #333;
+  }
+`;
+
+const DropZone = styled.div`
+  margin-top: 1rem;
+  width: 100%;
+  height: 200px;
+  border: 2px dashed rgba(182, 149, 192, 0.5);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(182, 149, 192, 0.05);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover, &.active {
+    background-color: rgba(182, 149, 192, 0.1);
+    border-color: rgba(182, 149, 192, 0.8);
+  }
+  
+  p {
+    margin: 0.5rem 0;
+    color: var(--accent);
+  }
+  
+  .icon {
+    font-size: 2rem;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+`;
+
 const Config = () => {
-  const [config, setConfig] = useState({
-    siteTitle: '',
-    weddingDate: '',
-    pixKey: '',
-    pixDescription: ''
-  });
+  const { config, setConfig } = useConfig();
   const [qrCodeImage, setQrCodeImage] = useState(null);
   const [qrCodePreview, setQrCodePreview] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   
-  // Referência para o input de arquivo
+  // Estado para imagens de fundo
+  const [backgroundImages, setBackgroundImages] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggedFiles, setDraggedFiles] = useState([]);
+  
+  // Referências para os inputs de arquivo
   const fileInputRef = React.createRef();
+  const bgFileInputRef = React.createRef();
   
   useEffect(() => {
     fetchConfig();
+    fetchBackgroundImages();
   }, []);
   
   const fetchConfig = async () => {
@@ -133,6 +256,16 @@ const Config = () => {
     } catch (error) {
       console.error('Erro ao buscar configurações:', error);
       setError('Erro ao carregar configurações. Tente novamente mais tarde.');
+    }
+  };
+  
+  const fetchBackgroundImages = async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/api/background-images');
+      setBackgroundImages(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar imagens de fundo:', error);
+      setError('Erro ao carregar imagens de fundo. Tente novamente mais tarde.');
     }
   };
   
@@ -173,6 +306,160 @@ const Config = () => {
       setQrCodePreview(reader.result);
     };
     reader.readAsDataURL(file);
+  };
+  
+  const handleBackgroundImageClick = () => {
+    bgFileInputRef.current.click();
+  };
+  
+  const handleBackgroundImageChange = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+    
+    await uploadBackgroundImages(files);
+  };
+  
+  const uploadBackgroundImages = async (files) => {
+    setIsLoading(true);
+    setSuccess('');
+    setError('');
+    
+    try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
+      
+      // Upload de cada arquivo
+      for (const file of files) {
+        // Verificar tipo de arquivo
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+          setError(`Arquivo "${file.name}" não suportado. Apenas imagens são permitidas.`);
+          continue;
+        }
+        
+        // Verificar tamanho do arquivo (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          setError(`Arquivo "${file.name}" muito grande. O tamanho máximo é 5MB.`);
+          continue;
+        }
+        
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        await axios.post('http://localhost:3001/api/background-images/upload', formData, {
+          headers: {
+            ...headers,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      }
+      
+      // Atualizar lista de imagens
+      fetchBackgroundImages();
+      setSuccess('Imagens de fundo enviadas com sucesso!');
+    } catch (error) {
+      console.error('Erro ao fazer upload das imagens de fundo:', error);
+      setError('Erro ao fazer upload das imagens de fundo. Tente novamente.');
+    } finally {
+      setIsLoading(false);
+      setDraggedFiles([]);
+    }
+  };
+  
+  const handleDeleteBackgroundImage = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
+      
+      await axios.delete(`http://localhost:3001/api/background-images/${id}`, { headers });
+      
+      // Atualizar lista de imagens
+      setBackgroundImages(backgroundImages.filter(img => img.id !== id));
+      setSuccess('Imagem removida com sucesso!');
+    } catch (error) {
+      console.error('Erro ao excluir imagem de fundo:', error);
+      setError('Erro ao excluir imagem de fundo. Tente novamente.');
+    }
+  };
+  
+  const handleToggleBackgroundImage = async (id, active) => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
+      
+      await axios.put(`http://localhost:3001/api/background-images/${id}`, 
+        { active: !active }, 
+        { headers }
+      );
+      
+      // Atualizar lista de imagens
+      setBackgroundImages(backgroundImages.map(img => 
+        img.id === id ? { ...img, active: !active } : img
+      ));
+      
+      setSuccess(`Imagem ${!active ? 'ativada' : 'desativada'} com sucesso!`);
+    } catch (error) {
+      console.error('Erro ao atualizar status da imagem de fundo:', error);
+      setError('Erro ao atualizar status da imagem de fundo. Tente novamente.');
+    }
+  };
+  
+  const handleDragEnd = async (result) => {
+    if (!result.destination) return;
+    
+    const items = Array.from(backgroundImages);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    
+    // Atualizar ordem localmente
+    setBackgroundImages(items);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
+      
+      // Enviar nova ordem para o servidor
+      await axios.post('http://localhost:3001/api/background-images/reorder', 
+        { order: items.map(item => item.id) }, 
+        { headers }
+      );
+      
+      setSuccess('Ordem das imagens atualizada com sucesso!');
+    } catch (error) {
+      console.error('Erro ao reordenar imagens de fundo:', error);
+      setError('Erro ao reordenar imagens de fundo. Tente novamente.');
+      // Reverter para a ordem anterior em caso de erro
+      fetchBackgroundImages();
+    }
+  };
+  
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+  
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length === 0) return;
+    
+    setDraggedFiles(files);
+    uploadBackgroundImages(files);
   };
   
   const handleSubmit = async (e) => {
@@ -242,7 +529,7 @@ const Config = () => {
       <Sidebar>
         <Logo>
           <h1>
-            Marília <span>&</span> Iago
+            {config.siteTitle || 'Marília & Iago'}
           </h1>
         </Logo>
         
@@ -306,6 +593,76 @@ const Config = () => {
                 onChange={handleChange}
               />
             </FormGroup>
+          </ConfigContainer>
+          
+          <ConfigContainer>
+            <ConfigTitle>Imagens de Fundo (Slideshow)</ConfigTitle>
+            <p>Adicione imagens para o slideshow da página inicial. As imagens serão exibidas em rotação a cada 3 segundos.</p>
+            
+            <DropZone 
+              onClick={handleBackgroundImageClick}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={isDragging ? 'active' : ''}
+            >
+              <div className="icon">📷</div>
+              <p>Arraste imagens aqui ou clique para selecionar</p>
+              <p>Formatos aceitos: JPG, PNG, GIF, WebP (máx. 5MB)</p>
+            </DropZone>
+            
+            <input
+              type="file"
+              ref={bgFileInputRef}
+              style={{ display: 'none' }}
+              accept="image/*"
+              onChange={handleBackgroundImageChange}
+              multiple
+            />
+            
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="background-images" direction="horizontal">
+                {(provided) => (
+                  <BackgroundImagesGrid
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                  >
+                    {backgroundImages.map((image, index) => (
+                      <Draggable key={image.id} draggableId={`image-${image.id}`} index={index}>
+                        {(provided) => (
+                          <BackgroundImageItem
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            active={image.active}
+                          >
+                            <img 
+                              src={`http://localhost:3001${image.path}`} 
+                              alt={`Imagem de fundo ${index + 1}`} 
+                            />
+                            <DragHandle {...provided.dragHandleProps} />
+                            <ImageActions className="image-actions" active={image.active}>
+                              <button 
+                                className="toggle-btn"
+                                onClick={() => handleToggleBackgroundImage(image.id, image.active)}
+                              >
+                                {image.active ? 'Desativar' : 'Ativar'}
+                              </button>
+                              <button 
+                                className="delete-btn"
+                                onClick={() => handleDeleteBackgroundImage(image.id)}
+                              >
+                                Excluir
+                              </button>
+                            </ImageActions>
+                          </BackgroundImageItem>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </BackgroundImagesGrid>
+                )}
+              </Droppable>
+            </DragDropContext>
           </ConfigContainer>
           
           <ConfigContainer>
