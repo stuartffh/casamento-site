@@ -43,7 +43,9 @@ WORKDIR /app/apps/server
 RUN pnpm install --prod
 
 # Prisma
+ENV DATABASE_URL="file:./database.sqlite"
 RUN npx prisma generate && npx prisma migrate deploy
+
 
 # Variáveis de ambiente
 ENV NODE_ENV=production
