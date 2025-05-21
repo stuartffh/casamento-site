@@ -78,3 +78,14 @@ model Album {
   order     Int      @default(0)
   createdAt DateTime @default(now())
 }
+
+model StoryEvent {
+  id        Int      @id @default(autoincrement())
+  date      String   // Data do evento (ex: "Janeiro de 2020")
+  title     String   // Título do evento (ex: "Primeiro Encontro")
+  text      String   // Descrição/história do evento
+  image     String?  // URL da imagem do evento
+  order     Int      @default(0) // Para ordenação manual se necessário
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

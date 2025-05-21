@@ -16,6 +16,7 @@ import AdminDashboard from './pages/Admin/Dashboard';
 import AdminPresentes from './pages/Admin/Presentes';
 import AdminConfig from './pages/Admin/Config';
 import AdminConteudo from './pages/Admin/Conteudo';
+import AdminHistoria from './pages/Admin/Historia';
 import AdminAlbum from './pages/Admin/Album';
 import AdminRSVP from './pages/Admin/RSVP';
 
@@ -85,6 +86,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <AdminRSVP />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/historia" 
+            element={
+              <ProtectedRoute>
+                <AdminHistoria />
               </ProtectedRoute>
             } 
           />

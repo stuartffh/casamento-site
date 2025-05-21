@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import axios from 'axios';
 
 const PageContainer = styled.div`
   width: 100vw;
@@ -144,6 +145,19 @@ const TimelineImage = styled.img`
   margin-bottom: 15px;
 `;
 
+const TimelineImageFallback = styled.div`
+  width: 100%;
+  height: 200px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 0.9rem;
+`;
+
 const TimelineTitle = styled.h3`
   font-family: var(--font-serif);
   margin-bottom: 10px;
@@ -153,58 +167,144 @@ const TimelineText = styled.p`
   margin-bottom: 0;
 `;
 
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  width: 100%;
+`;
+
+const ErrorContainer = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: var(--cor-erro);
+`;
+
+const TimelineImageWithFallback = ({ src, alt }) => {
+  const [hasError, setHasError] = useState(!src);
+  
+  if (!src || hasError) {
+    return (
+      <TimelineImageFallback>
+        Imagem não disponível
+      </TimelineImageFallback>
+    );
+  }
+  
+  return (
+    <TimelineImage 
+      src={src} 
+      alt={alt}
+      onError={() => setHasError(true)}
+    />
+  );
+};
+
 const NossaHistoria = () => {
-  const [timelineEvents, setTimelineEvents] = useState([
-    {
-      date: 'Janeiro de 2020',
-      title: 'Primeiro Encontro',
-      text: 'Nos conhecemos em uma festa de amigos em comum. Foi uma conexão instantânea.',
-      image: '/images/couple-background.png'
-    },
-    {
-      date: 'Março de 2020',
-      title: 'Primeiro Beijo',
-      text: 'Depois de algumas semanas conversando, tivemos nosso primeiro beijo em um piquenique no parque.',
-      image: '/images/couple-background.png'
-    },
-    {
-      date: 'Junho de 2020',
-      title: 'Pedido de Namoro',
-      text: 'Em um jantar romântico à luz de velas, oficializamos nosso relacionamento.',
-      image: '/images/couple-background.png'
-    },
-    {
-      date: 'Dezembro de 2021',
-      title: 'Primeira Viagem Juntos',
-      text: 'Passamos o Ano Novo em uma praia paradisíaca, onde fortalecemos ainda mais nossa relação.',
-      image: '/images/couple-background.png'
-    },
-    {
-      date: 'Setembro de 2023',
-      title: 'Pedido de Casamento',
-      text: 'Durante um pôr do sol incrível, ele se ajoelhou e fez o pedido. Obviamente, a resposta foi sim!',
-      image: '/images/couple-background.png'
+  const [timelineEvents, setTimelineEvents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  
+  useEffect(() => {
+    const fetchStoryEvents = async () => {
+      try {
+        setIsLoading(true);
+        
+        const response = await axios.get('http://localhost:3001/api/story-events');
+        
+        // Ordenar eventos por ordem e depois por data
+        const sortedEvents = response.data.sort((a, b) => {
+          if (a.order !== b.order) {
+            return a.order - b.order;
+          }
+          return new Date(a.createdAt) - new Date(b.createdAt);
+        });
+        
+        setTimelineEvents(sortedEvents);
+        setError('');
+      } catch (error) {
+        console.error('Erro ao buscar eventos da história:', error);
+        setError('Não foi possível carregar nossa história. Por favor, tente novamente mais tarde.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchStoryEvents();
+  }, []);
+  
+  // Fallback para dados mockados caso não haja eventos no banco
+  useEffect(() => {
+    if (!isLoading && timelineEvents.length === 0 && !error) {
+      setTimelineEvents([
+        {
+          id: 1,
+          date: 'Janeiro de 2020',
+          title: 'Primeiro Encontro',
+          text: 'Nos conhecemos em uma festa de amigos em comum. Foi uma conexão instantânea.',
+          image: '/images/couple-background.png'
+        },
+        {
+          id: 2,
+          date: 'Março de 2020',
+          title: 'Primeiro Beijo',
+          text: 'Depois de algumas semanas conversando, tivemos nosso primeiro beijo em um piquenique no parque.',
+          image: '/images/couple-background.png'
+        },
+        {
+          id: 3,
+          date: 'Junho de 2020',
+          title: 'Pedido de Namoro',
+          text: 'Em um jantar romântico à luz de velas, oficializamos nosso relacionamento.',
+          image: '/images/couple-background.png'
+        },
+        {
+          id: 4,
+          date: 'Dezembro de 2021',
+          title: 'Primeira Viagem Juntos',
+          text: 'Passamos o Ano Novo em uma praia paradisíaca, onde fortalecemos ainda mais nossa relação.',
+          image: '/images/couple-background.png'
+        },
+        {
+          id: 5,
+          date: 'Setembro de 2023',
+          title: 'Pedido de Casamento',
+          text: 'Durante um pôr do sol incrível, ele se ajoelhou e fez o pedido. Obviamente, a resposta foi sim!',
+          image: '/images/couple-background.png'
+        }
+      ]);
     }
-  ]);
+  }, [isLoading, timelineEvents.length, error]);
   
   return (
     <PageContainer className="nossa-historia-page">
       <PageContent>
         <SectionTitle>Nossa História</SectionTitle>
         
-        <Timeline>
-          {timelineEvents.map((event, index) => (
-            <TimelineItem key={index}>
-              <TimelineDot />
-              <TimelineContent>
-                <TimelineImage src={event.image} alt={event.title} />
-                <TimelineDate>{event.date}</TimelineDate>
-                <TimelineTitle>{event.title}</TimelineTitle>
-                <TimelineText>{event.text}</TimelineText>
-              </TimelineContent>
-            </TimelineItem>
-          ))}
-        </Timeline>
+        {isLoading ? (
+          <LoadingContainer>
+            <p>Carregando nossa história...</p>
+          </LoadingContainer>
+        ) : error ? (
+          <ErrorContainer>
+            <p>{error}</p>
+          </ErrorContainer>
+        ) : (
+          <Timeline>
+            {timelineEvents.map((event, index) => (
+              <TimelineItem key={event.id || index}>
+                <TimelineDot />
+                <TimelineContent>
+                  <TimelineImageWithFallback src={event.image} alt={event.title} />
+                  <TimelineDate>{event.date}</TimelineDate>
+                  <TimelineTitle>{event.title}</TimelineTitle>
+                  <TimelineText>{event.text}</TimelineText>
+                </TimelineContent>
+              </TimelineItem>
+            ))}
+          </Timeline>
+        )}
       </PageContent>
     </PageContainer>
   );
