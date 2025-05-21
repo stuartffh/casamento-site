@@ -5,7 +5,7 @@ import axios from 'axios';
 const PageContainer = styled.div`
   width: 100vw;
   max-width: 100%;
-  margin-top: calc(6 * var(--header-height));
+  margin-top: calc(12 * var(--header-height));
 `;
 
 const PageContent = styled.div`
@@ -194,7 +194,7 @@ const TimelineImageWithFallback = ({ src, alt }) => {
   
   return (
     <TimelineImage 
-      src={src} 
+      src={`http://localhost:3001${src}`}
       alt={alt}
       onError={() => setHasError(true)}
     />
