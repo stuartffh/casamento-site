@@ -110,7 +110,7 @@ router.post('/', authenticateJWT, async (req, res) => {
         title,
         text,
         image,
-        order: order || 0
+        order: parseInt(order) || 0
       }
     });
     

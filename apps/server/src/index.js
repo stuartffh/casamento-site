@@ -12,6 +12,7 @@ const rsvpRoutes = require('./routes/rsvp');
 const mercadoPagoRoutes = require('./routes/mercadopago');
 const albumRoutes = require('./routes/album');
 const contentRoutes = require('./routes/content');
+const storyRoutes = require('./routes/storyEvents');
 
 // Middlewares
 const { authenticateJWT } = require('./middleware/auth');
@@ -41,6 +42,7 @@ app.use('/api/config', configRoutes); // Agora totalmente pública, proteção s
 app.use('/api/presentes', presentesRoutes); // Parcialmente protegida (GET público)
 app.use('/api/album', albumRoutes); // Parcialmente protegida (GET público)
 app.use('/api/content', contentRoutes); // Parcialmente protegida (GET público)
+app.use('/api/story-events', storyRoutes); // Parcialmente protegida (GET público)
 
 // Rota de teste
 app.get('/', (req, res) => {

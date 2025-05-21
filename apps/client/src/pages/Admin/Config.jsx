@@ -399,6 +399,9 @@ const Config = () => {
             <NavLink to="/admin/conteudo">Conteúdo</NavLink>
           </NavItem>
           <NavItem>
+            <NavLink to="/admin/historia">Nossa História</NavLink>
+          </NavItem>
+          <NavItem>
             <NavLink to="/admin/album">Álbum</NavLink>
           </NavItem>
           <NavItem>

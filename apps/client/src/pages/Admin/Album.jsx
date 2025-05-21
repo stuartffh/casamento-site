@@ -527,6 +527,9 @@ const Album = () => {
             <NavLink to="/admin/conteudo">Conteúdo</NavLink>
           </NavItem>
           <NavItem>
+            <NavLink to="/admin/historia">Nossa História</NavLink>
+          </NavItem>
+          <NavItem>
             <NavLink to="/admin/album" className="active">Álbum</NavLink>
           </NavItem>
           <NavItem>
