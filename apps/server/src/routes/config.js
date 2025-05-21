@@ -91,6 +91,24 @@ async function ensureSingleConfig() {
   return await prisma.config.findFirst();
 }
 
+// Função para remover arquivo antigo
+async function removeOldFile(filePath) {
+  if (!filePath) return;
+  
+  try {
+    // Converter caminho relativo para absoluto
+    const absolutePath = path.join(__dirname, '../../public', filePath);
+    
+    // Verificar se o arquivo existe
+    if (fs.existsSync(absolutePath)) {
+      fs.unlinkSync(absolutePath);
+      console.log(`Arquivo removido: ${absolutePath}`);
+    }
+  } catch (error) {
+    console.error(`Erro ao remover arquivo antigo: ${error.message}`);
+  }
+}
+
 // Obter configurações (público)
 router.get('/', async (req, res) => {
   try {
@@ -119,6 +137,25 @@ router.post('/upload-qrcode', authenticateJWT, upload.single('qrcode'), async (r
     // Caminho relativo para o arquivo (para salvar no banco)
     const relativePath = `/uploads/pix/${req.file.filename}`;
     
+    // Buscar configuração atual
+    const config = await ensureSingleConfig();
+    
+    // Salvar caminho antigo para remoção posterior
+    const oldImagePath = config.pixQrCodeImage;
+    
+    // Atualizar o registro com o novo caminho da imagem
+    await prisma.config.update({
+      where: { id: config.id },
+      data: {
+        pixQrCodeImage: relativePath
+      }
+    });
+    
+    // Remover arquivo antigo se existir
+    if (oldImagePath) {
+      await removeOldFile(oldImagePath);
+    }
+    
     res.json({
       message: 'Upload realizado com sucesso',
       imagePath: relativePath
@@ -136,6 +173,11 @@ router.put('/', authenticateJWT, async (req, res) => {
     
     // Garantir que exista apenas um registro de configuração
     const existingConfig = await ensureSingleConfig();
+    
+    // Se houver uma nova imagem e for diferente da atual, remover a antiga
+    if (pixQrCodeImage && pixQrCodeImage !== existingConfig.pixQrCodeImage) {
+      await removeOldFile(existingConfig.pixQrCodeImage);
+    }
     
     // Atualizar o registro existente
     const config = await prisma.config.update({

@@ -126,8 +126,8 @@ const Config = () => {
         });
         
         // Verificar se há QR Code
-        if (response.data.pixQrCode) {
-          setQrCodePreview(`http://localhost:3001/uploads/pix/${response.data.pixQrCode}`);
+        if (response.data.pixQrCodeImage) {
+          setQrCodePreview(response.data.pixQrCodeImage);
         }
       }
     } catch (error) {
@@ -189,38 +189,45 @@ const Config = () => {
       };
       
       // Primeiro, fazer upload do QR Code se houver um novo
-      let qrCodeFilename = null;
       if (qrCodeImage) {
         const formData = new FormData();
         formData.append('qrcode', qrCodeImage);
         
-        const uploadResponse = await axios.post('http://localhost:3001/api/config/upload-qrcode', formData, {
-          headers: {
-            ...headers,
-            'Content-Type': 'multipart/form-data'
+        try {
+          const uploadResponse = await axios.post('http://localhost:3001/api/config/upload-qrcode', formData, {
+            headers: {
+              ...headers,
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+          
+          // O banco já foi atualizado automaticamente pelo backend
+          // Apenas atualizamos o estado local com o novo caminho
+          if (uploadResponse.data.imagePath) {
+            setQrCodePreview(uploadResponse.data.imagePath);
           }
-        });
-        
-        qrCodeFilename = uploadResponse.data.filename;
+        } catch (uploadError) {
+          console.error('Erro ao fazer upload da imagem:', uploadError);
+          setError('Erro ao fazer upload da imagem. Tente novamente.');
+          setIsLoading(false);
+          return;
+        }
       }
       
-      // Depois, atualizar as configurações
-      const configData = {
-        ...config
-      };
-      
-      if (qrCodeFilename) {
-        configData.pixQrCode = qrCodeFilename;
-      }
-      
-      await axios.put('http://localhost:3001/api/config', configData, { headers });
+      // Depois, atualizar as demais configurações
+      await axios.put('http://localhost:3001/api/config', config, { headers });
       
       setSuccess('Configurações salvas com sucesso!');
+      
+      // Recarregar as configurações para garantir dados atualizados
+      fetchConfig();
     } catch (error) {
       console.error('Erro ao salvar configurações:', error);
       setError('Erro ao salvar configurações. Tente novamente mais tarde.');
     } finally {
       setIsLoading(false);
+      // Limpar o estado de upload de imagem
+      setQrCodeImage(null);
     }
   };
   
@@ -332,10 +339,10 @@ const Config = () => {
               <ImagePreview onClick={handleQrCodeClick}>
                 {qrCodePreview ? (
                   <img 
-                    src={`http://localhost:3001${qrCodePreview}`}
+                    src={qrCodePreview.startsWith('data:') ? qrCodePreview : `http://localhost:3001${qrCodePreview}`}
                     alt="QR Code PIX" 
                     onError={() => {
-                      setQrCodePreview('');
+                      console.error('Erro ao carregar imagem');
                       setError('Erro ao carregar imagem do QR Code.');
                     }}
                   />
