@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 
 const AlbumContainer = styled.div`
   display: flex;
+
+  
   min-height: 100vh;
 `;
 

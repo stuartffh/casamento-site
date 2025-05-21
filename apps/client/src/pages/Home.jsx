@@ -11,7 +11,6 @@ const HomeContainer = styled.div`
 
 const HeroSection = styled.section`
   height: calc(100vh - var(--header-height));
-  margin-top: var(--header-height);
   width: 100%;
   background-image: url('/images/couple-background.png');
   background-size: cover;

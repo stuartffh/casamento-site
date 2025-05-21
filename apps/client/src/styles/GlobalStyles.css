@@ -21,7 +21,7 @@
   --font-sans: 'Montserrat', sans-serif;
   
   /* Layout */
-  --header-height: 0px;
+  --header-height: 80px;
   --container-width: 1200px;
   --container-padding: 20px;
   
