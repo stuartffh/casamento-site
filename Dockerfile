@@ -44,6 +44,9 @@ RUN pnpm install --prod
 
 # Prisma
 ENV DATABASE_URL="file:./database.sqlite"
+
+RUN apk add --no-cache openssl1.1
+
 RUN npx prisma generate && npx prisma migrate deploy
 
 
