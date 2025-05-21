@@ -192,32 +192,42 @@ const ErrorMessage = styled.div`
   margin-bottom: 1.5rem;
 `;
 
+// Novos componentes para upload de imagem
+const ImageUploadContainer = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
 const ImagePreview = styled.div`
-  margin-top: 1rem;
   width: 200px;
   height: 200px;
-  border: 1px dashed var(--cor-borda);
+  border: 2px dashed var(--cor-borda);
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 1rem;
+  cursor: pointer;
   overflow: hidden;
-  background-color: #f0f0f0;
+  position: relative;
   
   img {
-    width: 100%;
-    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
     object-fit: contain;
+  }
+  
+  &:hover {
+    border-color: var(--cor-primaria-clara);
   }
 `;
 
 const ImageUploadButton = styled.button`
-  margin-top: 0.5rem;
-  padding: 0.5rem 1rem;
   background-color: var(--cor-primaria-escura);
   color: var(--cor-branco);
   border: none;
   border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
   cursor: pointer;
   
   &:hover {
@@ -225,51 +235,21 @@ const ImageUploadButton = styled.button`
   }
 `;
 
-// Componente de preview de imagem com tratamento de erro
-const ImagePreviewWithFallback = ({ src, alt, onClick }) => {
-  const [hasError, setHasError] = useState(false);
-  
-  if (!src) {
-    return (
-      <ImagePreview onClick={onClick}>
-        <span>Clique para selecionar uma imagem</span>
-      </ImagePreview>
-    );
-  }
-  
-  if (hasError) {
-    return (
-      <ImagePreview onClick={onClick}>
-        <span>Imagem não disponível. Clique para selecionar outra.</span>
-      </ImagePreview>
-    );
-  }
-  
-  return (
-    <ImagePreview onClick={onClick}>
-      <img 
-        src={src} 
-        alt={alt || 'Preview'} 
-        onError={() => setHasError(true)}
-      />
-    </ImagePreview>
-  );
-};
+const HiddenFileInput = styled.input`
+  display: none;
+`;
 
 const Config = () => {
   const [formData, setFormData] = useState({
     pixKey: '',
     pixDescription: '',
-    mercadoPagoToken: ''
+    mercadoPagoToken: '',
+    pixQrCodeImage: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [pixQrCodeFile, setPixQrCodeFile] = useState(null);
-  const [pixQrCodePreview, setPixQrCodePreview] = useState('');
-  const [uploadingImage, setUploadingImage] = useState(false);
-  
-  // Referência para o input de arquivo
+  const [qrCodePreview, setQrCodePreview] = useState('');
   const fileInputRef = useRef(null);
   
   useEffect(() => {
@@ -285,12 +265,12 @@ const Config = () => {
           setFormData({
             pixKey: response.data.pixKey || '',
             pixDescription: response.data.pixDescription || '',
-            mercadoPagoToken: response.data.mercadoPagoToken || ''
+            mercadoPagoToken: response.data.mercadoPagoToken || '',
+            pixQrCodeImage: response.data.pixQrCodeImage || ''
           });
           
-          // Se houver uma imagem de QR Code, definir o preview
           if (response.data.pixQrCodeImage) {
-            setPixQrCodePreview(response.data.pixQrCodeImage);
+            setQrCodePreview(`http://localhost:3001${response.data.pixQrCodeImage}`);
           }
         }
       } catch (error) {
@@ -314,56 +294,56 @@ const Config = () => {
     fileInputRef.current.click();
   };
   
-  const handleImageChange = (e) => {
+  const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     
-    // Verificar tipo de arquivo
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      setError('Tipo de arquivo não suportado. Apenas imagens são permitidas.');
+    // Validar tipo de arquivo
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      setError('Tipo de arquivo inválido. Use JPG, PNG, GIF ou WebP.');
       return;
     }
     
-    // Verificar tamanho do arquivo (5MB)
+    // Validar tamanho (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setError('Arquivo muito grande. O tamanho máximo é 5MB.');
       return;
     }
     
-    setPixQrCodeFile(file);
-    
-    // Criar preview da imagem
+    // Criar preview
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setPixQrCodePreview(reader.result);
+    reader.onload = (e) => {
+      setQrCodePreview(e.target.result);
     };
     reader.readAsDataURL(file);
+    
+    // Preparar para upload
+    uploadImage(file);
   };
   
-  const uploadImage = async () => {
-    if (!pixQrCodeFile) return null;
-    
+  const uploadImage = async (file) => {
     try {
-      setUploadingImage(true);
-      
       const formData = new FormData();
-      formData.append('image', pixQrCodeFile);
+      formData.append('qrcode', file);
       
-      const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:3001/api/config/upload', formData, {
+      const response = await axios.post('http://localhost:3001/api/config/upload-qrcode', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
       
-      return response.data.url;
+      setFormData(prev => ({
+        ...prev,
+        pixQrCodeImage: response.data.imagePath
+      }));
+      
+      setSuccess('Imagem do QR Code enviada com sucesso!');
     } catch (error) {
       console.error('Erro ao fazer upload da imagem:', error);
+      setError('Erro ao fazer upload da imagem. Tente novamente.');
       throw new Error('Erro ao fazer upload da imagem. Tente novamente.');
-    } finally {
-      setUploadingImage(false);
     }
   };
   
@@ -375,21 +355,7 @@ const Config = () => {
     setError('');
     
     try {
-      // Fazer upload da imagem se houver uma nova
-      let pixQrCodeImage = pixQrCodePreview;
-      if (pixQrCodeFile) {
-        const imageUrl = await uploadImage();
-        if (imageUrl) {
-          pixQrCodeImage = imageUrl;
-        }
-      }
-      
-      const configData = {
-        ...formData,
-        pixQrCodeImage
-      };
-      
-      await axios.put('http://localhost:3001/api/config', configData, {
+      await axios.put('http://localhost:3001/api/config', formData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
@@ -476,26 +442,25 @@ const Config = () => {
                 />
               </FormGroup>
               
-              <FormGroup>
+              <ImageUploadContainer>
                 <Label>QR Code do PIX</Label>
-                <input
+                <ImagePreview onClick={handleImageClick}>
+                  {qrCodePreview ? (
+                    <img src={qrCodePreview} alt="QR Code do PIX" />
+                  ) : (
+                    <span>Clique para selecionar uma imagem</span>
+                  )}
+                </ImagePreview>
+                <HiddenFileInput
                   type="file"
                   ref={fileInputRef}
-                  style={{ display: 'none' }}
-                  onChange={handleImageChange}
-                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  onChange={handleFileChange}
                 />
-                
-                <ImagePreviewWithFallback
-                  src={pixQrCodePreview}
-                  alt="QR Code do PIX"
-                  onClick={handleImageClick}
-                />
-                
                 <ImageUploadButton type="button" onClick={handleImageClick}>
-                  {pixQrCodePreview ? 'Alterar QR Code' : 'Selecionar QR Code'}
+                  Selecionar QR Code
                 </ImageUploadButton>
-              </FormGroup>
+              </ImageUploadContainer>
             </FormSection>
             
             <FormSection>
@@ -513,8 +478,8 @@ const Config = () => {
               </FormGroup>
             </FormSection>
             
-            <SubmitButton type="submit" disabled={isLoading || uploadingImage}>
-              {isLoading || uploadingImage ? 'Salvando...' : 'Salvar Configurações'}
+            <SubmitButton type="submit" disabled={isLoading}>
+              {isLoading ? 'Salvando...' : 'Salvar Configurações'}
             </SubmitButton>
           </form>
         </FormContainer>

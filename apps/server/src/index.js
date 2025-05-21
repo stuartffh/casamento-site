@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 
 // Rotas
@@ -23,6 +24,12 @@ const PORT = process.env.PORT || 3001;
 // Middlewares
 app.use(cors());
 app.use(express.json());
+
+// Servir arquivos estáticos da pasta uploads
+const uploadsPath = path.resolve(process.cwd(), 'public/uploads');
+app.use('/uploads', express.static(uploadsPath));
+// Também servir a pasta public diretamente
+app.use(express.static(path.resolve(process.cwd(), 'public')));
 
 // Rotas públicas
 app.use('/api/auth', authRoutes);

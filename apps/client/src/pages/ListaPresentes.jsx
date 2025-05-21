@@ -137,32 +137,34 @@ const PixContainer = styled.div`
   margin: 0 auto;
 `;
 
-const PixQRCodeContainer = styled.div`
-  width: 200px;
-  height: 200px;
+const PixQRCode = styled.div`
+  width: 250px;
+  height: 250px;
   margin: 30px auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f0f0f0;
-  border-radius: 5px;
-  overflow: hidden;
-`;
-
-const PixQRCodeImage = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-`;
-
-const PixQRCodeFallback = styled.div`
-  width: 100%;
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.9rem;
   color: #666;
+  
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+`;
+
+const PixQRCodeFallback = styled.div`
+  width: 250px;
+  height: 250px;
+  margin: 30px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  color: #666;
+  font-size: 0.9rem;
+  border-radius: 5px;
 `;
 
 const PixKey = styled.div`
@@ -289,24 +291,22 @@ const ListaPresentes = () => {
     );
   };
   
-  // Componente de QR Code com tratamento de erro
-  const PixQRCodeWithFallback = ({ src }) => {
+  // Componente para QR Code com tratamento de erro
+  const QRCodeWithFallback = ({ src, alt }) => {
     const [hasError, setHasError] = useState(false);
     
-    if (!src) {
-      return <PixQRCodeFallback>QR Code não disponível</PixQRCodeFallback>;
-    }
-    
-    if (hasError) {
+    if (!src || hasError) {
       return <PixQRCodeFallback>QR Code não disponível</PixQRCodeFallback>;
     }
     
     return (
-      <PixQRCodeImage 
-        src={src} 
-        alt="QR Code do PIX"
-        onError={() => setHasError(true)}
-      />
+      <PixQRCode>
+        <img 
+          src={`http://localhost:3001${src}`} 
+          alt={alt || 'QR Code PIX'} 
+          onError={() => setHasError(true)}
+        />
+      </PixQRCode>
     );
   };
   
@@ -325,16 +325,12 @@ const ListaPresentes = () => {
           <h3>Contribua com o valor que desejar</h3>
           <p>Você pode nos ajudar com qualquer valor através do PIX abaixo:</p>
           
-          <PixQRCodeContainer>
-            <PixQRCodeWithFallback src={pixInfo.qrCodeImage} />
-          </PixQRCodeContainer>
+          <QRCodeWithFallback src={pixInfo.qrCodeImage} alt="QR Code PIX" />
           
           <p>Ou copie a chave PIX:</p>
           <PixKey>{pixInfo.key}</PixKey>
           
-          {pixInfo.description && (
-            <p>{pixInfo.description}</p>
-          )}
+          <p>{pixInfo.description}</p>
           
           <p>Agradecemos muito pela sua contribuição!</p>
         </PixContainer>
