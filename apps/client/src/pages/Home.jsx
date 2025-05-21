@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 
 const HomeContainer = styled.div`
   width: 100%;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
 `;
