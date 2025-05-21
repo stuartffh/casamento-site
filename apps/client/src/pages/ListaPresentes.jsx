@@ -1,17 +1,21 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 
 const PageContainer = styled.div`
-  width: 100vw;
-  max-width: 100%;
+  width: 100%;
+  padding-top: var(--header-height);
 `;
 
 const PageContent = styled.div`
   width: 100%;
+  max-width: var(--container-width);
   margin: 0 auto;
-  padding: 60px 20px;
+  padding: 60px var(--container-padding);
   
+  @media (max-width: 768px) {
+    padding: 40px var(--container-padding);
+  }
 `;
 
 const SectionTitle = styled.h2`
@@ -35,8 +39,13 @@ const GiftTabs = styled.div`
   display: flex;
   justify-content: center;
   margin-bottom: 40px;
-  border-bottom: 1px solid rgba(182, 149, 192, 0.3);
+  border-bottom: 1px solid var(--border-color);
   width: 100%;
+  
+  @media (max-width: 576px) {
+    flex-direction: column;
+    align-items: center;
+  }
 `;
 
 const GiftTab = styled.div`
@@ -46,11 +55,17 @@ const GiftTab = styled.div`
   border-bottom: 2px solid ${props => props.active ? 'var(--primary)' : 'transparent'};
   font-family: var(--font-serif);
   font-size: 1.2rem;
-  transition: all 0.3s ease;
+  transition: var(--transition);
   color: ${props => props.active ? 'var(--primary)' : 'var(--accent)'};
   
   &:hover {
     color: var(--primary);
+  }
+  
+  @media (max-width: 576px) {
+    width: 100%;
+    text-align: center;
+    margin: 5px 0;
   }
 `;
 
@@ -59,18 +74,26 @@ const GiftGrid = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 30px;
   width: 100%;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+  
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const GiftCard = styled.div`
   background-color: var(--white);
   border-radius: 5px;
   overflow: hidden;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: var(--shadow-md);
+  transition: var(--transition);
   
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-lg);
   }
 `;
 
@@ -78,7 +101,7 @@ const GiftImage = styled.img`
   width: 100%;
   height: 200px;
   object-fit: cover;
-  background-color: #f0f0f0; /* Cor de fundo para quando a imagem não carregar */
+  background-color: #f0f0f0;
 `;
 
 const GiftImageFallback = styled.div`
@@ -118,7 +141,7 @@ const GiftButton = styled.button`
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: var(--transition);
   
   &:hover {
     background-color: var(--accent);
@@ -129,11 +152,15 @@ const PixContainer = styled.div`
   background-color: var(--white);
   border-radius: 5px;
   padding: 40px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-md);
   text-align: center;
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    padding: 30px 20px;
+  }
 `;
 
 const PixQRCode = styled.div`
@@ -151,6 +178,11 @@ const PixQRCode = styled.div`
     max-height: 100%;
     object-fit: contain;
   }
+  
+  @media (max-width: 576px) {
+    width: 200px;
+    height: 200px;
+  }
 `;
 
 const PixQRCodeFallback = styled.div`
@@ -164,6 +196,11 @@ const PixQRCodeFallback = styled.div`
   color: #666;
   font-size: 0.9rem;
   border-radius: 5px;
+  
+  @media (max-width: 576px) {
+    width: 200px;
+    height: 200px;
+  }
 `;
 
 const PixKey = styled.div`
@@ -173,6 +210,7 @@ const PixKey = styled.div`
   margin: 20px 0;
   font-family: monospace;
   font-size: 1.1rem;
+  word-break: break-all;
 `;
 
 const LoadingContainer = styled.div`
@@ -186,8 +224,8 @@ const LoadingContainer = styled.div`
 `;
 
 const ErrorContainer = styled.div`
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: var(--error);
+  color: var(--error-text);
   padding: 20px;
   border-radius: 5px;
   text-align: center;
@@ -196,18 +234,18 @@ const ErrorContainer = styled.div`
 `;
 
 const ListaPresentes = () => {
-  const [activeTab, setActiveTab] = useState('online');
-  const [gifts, setGifts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [pixInfo, setPixInfo] = useState({
+  const [activeTab, setActiveTab] = React.useState('online');
+  const [gifts, setGifts] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState('');
+  const [pixInfo, setPixInfo] = React.useState({
     key: 'marilia.iago@casamento.com',
     description: 'Presente de Casamento',
     qrCodeImage: ''
   });
   
   // Usando useCallback para evitar recriação das funções a cada render
-  const fetchPresentes = useCallback(async () => {
+  const fetchPresentes = React.useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get('http://localhost:3001/api/presentes');
@@ -221,7 +259,7 @@ const ListaPresentes = () => {
     }
   }, []);
   
-  const fetchPixInfo = useCallback(async () => {
+  const fetchPixInfo = React.useCallback(async () => {
     try {
       const response = await axios.get('http://localhost:3001/api/config');
       if (response.data) {
@@ -238,7 +276,7 @@ const ListaPresentes = () => {
   }, []);
   
   // useEffect com dependências explícitas
-  useEffect(() => {
+  React.useEffect(() => {
     // Usando uma flag para garantir que as chamadas só aconteçam uma vez
     let isMounted = true;
     
@@ -271,7 +309,7 @@ const ListaPresentes = () => {
   
   // Componente de imagem com tratamento de erro melhorado
   const GiftImageWithFallback = ({ src, alt }) => {
-    const [hasError, setHasError] = useState(false);
+    const [hasError, setHasError] = React.useState(false);
     
     // Se já sabemos que a imagem não existe, renderizamos o fallback diretamente
     if (hasError) {
@@ -292,7 +330,7 @@ const ListaPresentes = () => {
   
   // Componente para QR Code com tratamento de erro
   const QRCodeWithFallback = ({ src, alt }) => {
-    const [hasError, setHasError] = useState(false);
+    const [hasError, setHasError] = React.useState(false);
     
     if (!src || hasError) {
       return <PixQRCodeFallback>QR Code não disponível</PixQRCodeFallback>;
@@ -364,7 +402,7 @@ const ListaPresentes = () => {
   };
   
   return (
-    <PageContainer className="lista-presentes-page">
+    <PageContainer>
       <PageContent>
         <SectionTitle>Lista de Presentes</SectionTitle>
         

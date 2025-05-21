@@ -23,7 +23,7 @@ const HeaderInner = styled.div`
   align-items: center;
   width: 100%;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 var(--container-padding);
 `;
 
 const Logo = styled(Link)`
@@ -37,6 +37,8 @@ const NavMenu = styled.ul`
   display: flex;
   justify-content: center;
   list-style: none;
+  margin: 0;
+  padding: 0;
   
   @media (max-width: 992px) {
     display: ${props => props.$isOpen ? 'flex' : 'none'};
@@ -47,7 +49,7 @@ const NavMenu = styled.ul`
     width: 100%;
     background-color: rgba(255, 255, 255, 0.95);
     padding: 20px 0;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-md);
   }
 `;
 
@@ -91,14 +93,19 @@ const MobileMenuButton = styled.button`
   font-size: 1.5rem;
   color: var(--accent);
   cursor: pointer;
+  padding: 5px;
   
   @media (max-width: 992px) {
     display: block;
   }
+  
+  &:focus {
+    outline: none;
+  }
 `;
 
 const Header = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = React.useState(false);
   const location = useLocation();
   
   const toggleMenu = () => {
@@ -114,7 +121,7 @@ const Header = () => {
       <HeaderInner>
         <Logo to="/">Marília & Iago</Logo>
         
-        <MobileMenuButton onClick={toggleMenu}>
+        <MobileMenuButton onClick={toggleMenu} aria-label="Menu de navegação">
           {isOpen ? '✕' : '☰'}
         </MobileMenuButton>
         

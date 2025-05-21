@@ -1,16 +1,21 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 
 const PageContainer = styled.div`
-  width: 100vw;
-  max-width: 100%;
+  width: 100%;
+  padding-top: var(--header-height);
 `;
 
 const PageContent = styled.div`
   width: 100%;
+  max-width: var(--container-width);
   margin: 0 auto;
-  padding: 60px 20px;
+  padding: 60px var(--container-padding);
+  
+  @media (max-width: 768px) {
+    padding: 40px var(--container-padding);
+  }
 `;
 
 const SectionTitle = styled.h2`
@@ -37,7 +42,7 @@ const FormContainer = styled.div`
   background-color: var(--white);
   padding: 50px;
   border-radius: 5px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
   position: relative;
   
   &::before,
@@ -82,32 +87,34 @@ const FormLabel = styled.label`
 const FormInput = styled.input`
   width: 100%;
   padding: 15px;
-  border: 1px solid rgba(182, 149, 192, 0.3);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-family: var(--font-sans);
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  transition: var(--transition);
   
   &:focus {
     outline: none;
     border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(182, 149, 192, 0.2);
   }
 `;
 
 const FormTextarea = styled.textarea`
   width: 100%;
   padding: 15px;
-  border: 1px solid rgba(182, 149, 192, 0.3);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-family: var(--font-sans);
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  transition: var(--transition);
   height: 150px;
   resize: vertical;
   
   &:focus {
     outline: none;
     border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(182, 149, 192, 0.2);
   }
 `;
 
@@ -119,8 +126,8 @@ const FormButton = styled.button`
   font-family: var(--font-sans);
   font-size: 1.1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  border-radius: 3px;
+  transition: var(--transition);
+  border-radius: 4px;
   width: 100%;
   
   &:hover {
@@ -151,8 +158,8 @@ const ThankYouMessage = styled.div`
 `;
 
 const ErrorMessage = styled.div`
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: var(--error);
+  color: var(--error-text);
   padding: 15px;
   border-radius: 4px;
   margin-bottom: 20px;
@@ -160,7 +167,7 @@ const ErrorMessage = styled.div`
 `;
 
 const ConfirmePresenca = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = React.useState({
     name: '',
     email: '',
     phone: '',
@@ -168,9 +175,9 @@ const ConfirmePresenca = () => {
     message: ''
   });
   
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [submitted, setSubmitted] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState('');
   
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -208,7 +215,7 @@ const ConfirmePresenca = () => {
   };
   
   return (
-    <PageContainer className="confirme-presenca-page">
+    <PageContainer>
       <PageContent>
         <SectionTitle>Confirme sua Presença</SectionTitle>
         

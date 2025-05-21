@@ -1,17 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 
 const PageContainer = styled.div`
-  width: 100vw;
-  max-width: 100%;
+  width: 100%;
   padding-top: var(--header-height);
 `;
 
 const PageContent = styled.div`
   width: 100%;
+  max-width: var(--container-width);
   margin: 0 auto;
-  padding: 60px 20px;
+  padding: 60px var(--container-padding);
+  
+  @media (max-width: 768px) {
+    padding: 40px var(--container-padding);
+  }
 `;
 
 const SectionTitle = styled.h2`
@@ -83,7 +87,7 @@ const TimelineContent = styled.div`
   padding: 30px;
   background-color: var(--white);
   border-radius: 5px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-md);
   position: relative;
   
   &::before {
@@ -178,11 +182,15 @@ const LoadingContainer = styled.div`
 const ErrorContainer = styled.div`
   text-align: center;
   padding: 2rem;
-  color: var(--cor-erro);
+  color: var(--error-text);
+  background-color: var(--error);
+  border-radius: 5px;
+  margin: 2rem auto;
+  max-width: 600px;
 `;
 
 const TimelineImageWithFallback = ({ src, alt }) => {
-  const [hasError, setHasError] = useState(!src);
+  const [hasError, setHasError] = React.useState(!src);
   
   if (!src || hasError) {
     return (
@@ -202,11 +210,11 @@ const TimelineImageWithFallback = ({ src, alt }) => {
 };
 
 const NossaHistoria = () => {
-  const [timelineEvents, setTimelineEvents] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [timelineEvents, setTimelineEvents] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [error, setError] = React.useState('');
   
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchStoryEvents = async () => {
       try {
         setIsLoading(true);
@@ -235,7 +243,7 @@ const NossaHistoria = () => {
   }, []);
   
   // Fallback para dados mockados caso não haja eventos no banco
-  useEffect(() => {
+  React.useEffect(() => {
     if (!isLoading && timelineEvents.length === 0 && !error) {
       setTimelineEvents([
         {
@@ -278,7 +286,7 @@ const NossaHistoria = () => {
   }, [isLoading, timelineEvents.length, error]);
   
   return (
-    <PageContainer className="nossa-historia-page">
+    <PageContainer>
       <PageContent>
         <SectionTitle>Nossa História</SectionTitle>
         

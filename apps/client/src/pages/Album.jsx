@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
 const PageContainer = styled.div`
-  width: 100vw;
-  max-width: 100%;
+  width: 100%;
+  padding-top: var(--header-height);
 `;
 
 const PageContent = styled.div`

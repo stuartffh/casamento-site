@@ -5,12 +5,17 @@ import axios from 'axios';
 const PageContainer = styled.div`
   width: 100vw;
   max-width: 100%;
+  padding-top: var(--header-height);
 `;
 
 const PageContent = styled.div`
   width: 100%;
   margin: 0 auto;
-  padding: 60px 20px;
+  padding: 60px var(--container-padding);
+  
+  @media (max-width: 768px) {
+    padding: 40px var(--container-padding);
+  }
 `;
 
 const SectionTitle = styled.h2`
@@ -35,6 +40,11 @@ const InfoGrid = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 40px;
   width: 100%;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
 `;
 
 const InfoCard = styled.div`

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
@@ -12,7 +12,7 @@ const HomeContainer = styled.div`
 const HeroSection = styled.section`
   height: calc(100vh - var(--header-height));
   margin-top: var(--header-height);
-  width: 100vw;
+  width: 100%;
   background-image: url('/images/couple-background.png');
   background-size: cover;
   background-position: center;
@@ -25,7 +25,6 @@ const HeroSection = styled.section`
   padding: 0;
   overflow: hidden;
 `;
-
 
 const HeroOverlay = styled.div`
   position: absolute;
@@ -40,8 +39,8 @@ const HeroContent = styled.div`
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 800px;
-  padding: 0 20px;
+  max-width: var(--container-width);
+  padding: 0 var(--container-padding);
 `;
 
 const HeroTitle = styled.h1`
@@ -49,10 +48,14 @@ const HeroTitle = styled.h1`
   margin-bottom: 1rem;
   color: var(--white);
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-serif);
   
   @media (max-width: 768px) {
     font-size: 3rem;
+  }
+  
+  @media (max-width: 576px) {
+    font-size: 2.5rem;
   }
 `;
 
@@ -65,10 +68,14 @@ const HeroSubtitle = styled.p`
   @media (max-width: 768px) {
     font-size: 1.5rem;
   }
+  
+  @media (max-width: 576px) {
+    font-size: 1.3rem;
+  }
 `;
 
 const HeroDate = styled.div`
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-serif);
   font-size: 2rem;
   margin-bottom: 2rem;
   letter-spacing: 2px;
@@ -76,6 +83,11 @@ const HeroDate = styled.div`
   
   @media (max-width: 768px) {
     font-size: 1.5rem;
+  }
+  
+  @media (max-width: 576px) {
+    font-size: 1.3rem;
+    letter-spacing: 1px;
   }
 `;
 
@@ -137,9 +149,9 @@ const HeroButton = styled(Link)`
   color: var(--white);
   padding: 15px 30px;
   font-size: 1.1rem;
-  border-radius: 3px;
+  border-radius: 4px;
   display: inline-block;
-  transition: all 0.3s ease;
+  transition: var(--transition);
   border: 2px solid var(--primary);
   text-decoration: none;
   
@@ -156,12 +168,12 @@ const HeroButton = styled(Link)`
 `;
 
 const Home = () => {
-  const [days, setDays] = useState(0);
-  const [hours, setHours] = useState(0);
-  const [minutes, setMinutes] = useState(0);
-  const [seconds, setSeconds] = useState(0);
+  const [days, setDays] = React.useState(0);
+  const [hours, setHours] = React.useState(0);
+  const [minutes, setMinutes] = React.useState(0);
+  const [seconds, setSeconds] = React.useState(0);
   
-  useEffect(() => {
+  React.useEffect(() => {
     const weddingDate = new Date('September 20, 2025 19:00:00').getTime();
     
     const updateCountdown = () => {
