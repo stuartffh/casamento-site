@@ -88,6 +88,7 @@ model Album {
   image     String
   title     String?
   order     Int      @default(0)
+  active    Boolean  @default(true) // Se a imagem está ativa ou não
   createdAt DateTime @default(now())
 }
 
