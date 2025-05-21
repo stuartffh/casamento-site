@@ -315,25 +315,36 @@ const Historia = () => {
   
   const uploadImage = async () => {
     if (!imageFile) return null;
-    
+  
     try {
       const formData = new FormData();
       formData.append('image', imageFile);
-      
+  
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:3001/api/story-events/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`
+      const response = await axios.post(
+        'http://localhost:3001/api/story-events/upload',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${token}`
+          }
         }
-      });
-      
-      return response.data.url;
+      );
+  
+      if (!response.data?.imageUrl) {
+        console.error('Resposta da API não contém `imageUrl`: ', response.data);
+        throw new Error('Resposta da API inválida.');
+      }
+  
+      return response.data.imageUrl;
     } catch (error) {
       console.error('Erro ao fazer upload da imagem:', error);
       throw new Error('Erro ao fazer upload da imagem. Tente novamente.');
     }
   };
+  
+  
   
   const handleSubmit = async (e) => {
     e.preventDefault();

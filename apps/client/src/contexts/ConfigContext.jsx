@@ -1,40 +1,41 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 
-// Criando o contexto
+// Cria o contexto
 const ConfigContext = createContext();
 
-// Hook personalizado para usar o contexto
+// Hook customizado para consumir o contexto
 export const useConfig = () => useContext(ConfigContext);
 
-// Provedor do contexto
+// Componente provider do contexto
 export const ConfigProvider = ({ children }) => {
   const [config, setConfig] = useState({
-    siteTitle: 'Noiva & Noivo', // Valor padrão
+    siteTitle: 'Noiva & Noivo',
     weddingDate: '',
     pixKey: '',
     pixDescription: '',
     pixQrCodeImage: ''
   });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Função para buscar as configurações
+  // Busca as configurações da API
   const fetchConfig = async () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await axios.get('http://localhost:3001/api/config');
-      
+
       if (response.data) {
-        setConfig({
-          siteTitle: response.data.siteTitle || 'Noiva & Noivo',
+        setConfig((prev) => ({
+          siteTitle: response.data.siteTitle || prev.siteTitle,
           weddingDate: response.data.weddingDate || '',
           pixKey: response.data.pixKey || '',
           pixDescription: response.data.pixDescription || '',
           pixQrCodeImage: response.data.pixQrCodeImage || ''
-        });
+        }));
       }
     } catch (err) {
       console.error('Erro ao buscar configurações:', err);
@@ -44,15 +45,15 @@ export const ConfigProvider = ({ children }) => {
     }
   };
 
-  // Buscar configurações ao montar o componente
+  // Executa fetchConfig assim que o provider for montado
   useEffect(() => {
     fetchConfig();
   }, []);
 
-  // Função para formatar a data do casamento
+  // Formata a data do casamento para exibição
   const formatWeddingDate = () => {
     if (!config.weddingDate) return '';
-    
+
     try {
       const date = new Date(config.weddingDate);
       return new Intl.DateTimeFormat('pt-BR', {
@@ -66,9 +67,10 @@ export const ConfigProvider = ({ children }) => {
     }
   };
 
-  // Valores e funções expostos pelo contexto
+  // Valores expostos pelo contexto
   const value = {
     config,
+    setConfig, // ✅ adicionado para uso externo
     loading,
     error,
     refreshConfig: fetchConfig,
