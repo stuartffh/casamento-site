@@ -36,7 +36,7 @@ router.get('/', async (req, res) => {
 // Atualizar configurações (protegido)
 router.put('/', authenticateJWT, async (req, res) => {
   try {
-    const { pixKey, pixDescription, mercadoPagoToken } = req.body;
+    const { pixKey, pixDescription, mercadoPagoToken, pixQrCodeImage } = req.body;
     
     let config = await prisma.config.findFirst();
     
@@ -46,7 +46,8 @@ router.put('/', authenticateJWT, async (req, res) => {
         data: {
           pixKey,
           pixDescription,
-          mercadoPagoToken
+          mercadoPagoToken,
+          pixQrCodeImage
         }
       });
     } else {
@@ -54,7 +55,8 @@ router.put('/', authenticateJWT, async (req, res) => {
         data: {
           pixKey,
           pixDescription,
-          mercadoPagoToken
+          mercadoPagoToken,
+          pixQrCodeImage
         }
       });
     }

@@ -28,9 +28,9 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/rsvp', rsvpRoutes);
 app.use('/api/mercadopago/webhook', mercadoPagoRoutes);
+app.use('/api/config', configRoutes); // Agora totalmente pública, proteção será feita internamente
 
 // Rotas protegidas
-app.use('/api/config', authenticateJWT, configRoutes);
 app.use('/api/presentes', presentesRoutes); // Parcialmente protegida (GET público)
 app.use('/api/album', albumRoutes); // Parcialmente protegida (GET público)
 app.use('/api/content', contentRoutes); // Parcialmente protegida (GET público)

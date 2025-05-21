@@ -137,11 +137,27 @@ const PixContainer = styled.div`
   margin: 0 auto;
 `;
 
-const PixQRCode = styled.div`
+const PixQRCodeContainer = styled.div`
   width: 200px;
   height: 200px;
-  background-color: #f0f0f0;
   margin: 30px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  overflow: hidden;
+`;
+
+const PixQRCodeImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+`;
+
+const PixQRCodeFallback = styled.div`
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -185,7 +201,8 @@ const ListaPresentes = () => {
   const [error, setError] = useState('');
   const [pixInfo, setPixInfo] = useState({
     key: 'marilia.iago@casamento.com',
-    description: 'Presente de Casamento'
+    description: 'Presente de Casamento',
+    qrCodeImage: ''
   });
   
   // Usando useCallback para evitar recriação das funções a cada render
@@ -206,10 +223,11 @@ const ListaPresentes = () => {
   const fetchPixInfo = useCallback(async () => {
     try {
       const response = await axios.get('http://localhost:3001/api/config');
-      if (response.data && response.data.pixKey) {
+      if (response.data) {
         setPixInfo({
-          key: response.data.pixKey,
-          description: response.data.pixDescription || 'Presente de Casamento'
+          key: response.data.pixKey || 'marilia.iago@casamento.com',
+          description: response.data.pixDescription || 'Presente de Casamento',
+          qrCodeImage: response.data.pixQrCodeImage || ''
         });
       }
     } catch (error) {
@@ -271,6 +289,27 @@ const ListaPresentes = () => {
     );
   };
   
+  // Componente de QR Code com tratamento de erro
+  const PixQRCodeWithFallback = ({ src }) => {
+    const [hasError, setHasError] = useState(false);
+    
+    if (!src) {
+      return <PixQRCodeFallback>QR Code não disponível</PixQRCodeFallback>;
+    }
+    
+    if (hasError) {
+      return <PixQRCodeFallback>QR Code não disponível</PixQRCodeFallback>;
+    }
+    
+    return (
+      <PixQRCodeImage 
+        src={src} 
+        alt="QR Code do PIX"
+        onError={() => setHasError(true)}
+      />
+    );
+  };
+  
   const renderContent = () => {
     if (loading) {
       return <LoadingContainer>Carregando presentes...</LoadingContainer>;
@@ -286,12 +325,16 @@ const ListaPresentes = () => {
           <h3>Contribua com o valor que desejar</h3>
           <p>Você pode nos ajudar com qualquer valor através do PIX abaixo:</p>
           
-          <PixQRCode>
-            QR Code do PIX
-          </PixQRCode>
+          <PixQRCodeContainer>
+            <PixQRCodeWithFallback src={pixInfo.qrCodeImage} />
+          </PixQRCodeContainer>
           
           <p>Ou copie a chave PIX:</p>
           <PixKey>{pixInfo.key}</PixKey>
+          
+          {pixInfo.description && (
+            <p>{pixInfo.description}</p>
+          )}
           
           <p>Agradecemos muito pela sua contribuição!</p>
         </PixContainer>

@@ -23,6 +23,7 @@ model Config {
   id              Int      @id @default(autoincrement())
   pixKey          String?
   pixDescription  String?
+  pixQrCodeImage  String?  // Novo campo para armazenar a URL da imagem do QR Code
   mercadoPagoToken String?
   updatedAt       DateTime @updatedAt
 }

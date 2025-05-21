@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
+import axios from 'axios';
 
 const PageContainer = styled.div`
   width: 100vw;
@@ -62,6 +63,11 @@ const InfoTitle = styled.h3`
   margin-bottom: 15px;
 `;
 
+const InfoText = styled.div`
+  white-space: pre-line;
+  text-align: left;
+`;
+
 const MapContainer = styled.div`
   height: 400px;
   margin-top: 30px;
@@ -76,34 +82,112 @@ const MapContainer = styled.div`
   color: #666;
 `;
 
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  width: 100%;
+  font-size: 1.2rem;
+  color: var(--accent);
+`;
+
+const ErrorContainer = styled.div`
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+  margin: 20px auto;
+  max-width: 800px;
+`;
+
 const Informacoes = () => {
-  const [infoSections, setInfoSections] = useState([
-    {
-      icon: '🏛️',
-      title: 'Cerimônia',
-      text: 'A cerimônia será realizada na Igreja Nossa Senhora das Graças, às 16h. Pedimos que os convidados cheguem com 30 minutos de antecedência.',
-    },
-    {
-      icon: '🥂',
-      title: 'Recepção',
-      text: 'A festa será no Espaço Villa Verde, a partir das 18h. O local conta com estacionamento gratuito para os convidados.',
-    },
-    {
-      icon: '👔',
-      title: 'Dress Code',
-      text: 'Traje social completo. Homens de terno e mulheres com vestido longo ou midi. Evite cores brancas, off-white e tons muito claros.'
-    },
-    {
-      icon: '🏨',
-      title: 'Hospedagem Sugerida',
-      text: 'Para convidados de fora da cidade, sugerimos o Hotel Royal Palace, que oferece 10% de desconto para os convidados do nosso casamento. Basta mencionar o código "MARILIA&IAGO".'
-    },
-    {
-      icon: '🚗',
-      title: 'Transporte',
-      text: 'Disponibilizaremos transporte da igreja para o local da festa. O ônibus sairá 15 minutos após o término da cerimônia.'
+  const [infoSections, setInfoSections] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  
+  const fetchInformacoes = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('http://localhost:3001/api/content/informacoes');
+      
+      if (response.data && response.data.content) {
+        try {
+          // Tentar fazer parse do JSON
+          const parsedContent = JSON.parse(response.data.content);
+          
+          // Criar as seções com os dados do backend
+          setInfoSections([
+            {
+              icon: '🏛️',
+              title: 'Cerimônia',
+              text: parsedContent.cerimonia || 'Informações em breve',
+            },
+            {
+              icon: '🥂',
+              title: 'Recepção',
+              text: parsedContent.recepcao || 'Informações em breve',
+            },
+            {
+              icon: '👔',
+              title: 'Dress Code',
+              text: parsedContent.dressCode || 'Informações em breve',
+            },
+            {
+              icon: '🏨',
+              title: 'Hospedagem Sugerida',
+              text: parsedContent.hospedagem || 'Informações em breve',
+            },
+            {
+              icon: '🚗',
+              title: 'Transporte',
+              text: parsedContent.transporte || 'Informações em breve',
+            }
+          ]);
+        } catch (e) {
+          // Se não for JSON, usar o formato antigo
+          console.error('Erro ao fazer parse do conteúdo:', e);
+          setError('Erro ao carregar informações. Por favor, tente novamente mais tarde.');
+        }
+      } else {
+        setInfoSections([]);
+      }
+      
+      setError('');
+    } catch (error) {
+      console.error('Erro ao buscar informações:', error);
+      setError('Erro ao carregar informações. Por favor, tente novamente mais tarde.');
+    } finally {
+      setLoading(false);
     }
-  ]);
+  }, []);
+  
+  useEffect(() => {
+    fetchInformacoes();
+  }, [fetchInformacoes]);
+  
+  if (loading) {
+    return (
+      <PageContainer className="informacoes-page">
+        <PageContent>
+          <SectionTitle>Informações</SectionTitle>
+          <LoadingContainer>Carregando informações...</LoadingContainer>
+        </PageContent>
+      </PageContainer>
+    );
+  }
+  
+  if (error) {
+    return (
+      <PageContainer className="informacoes-page">
+        <PageContent>
+          <SectionTitle>Informações</SectionTitle>
+          <ErrorContainer>{error}</ErrorContainer>
+        </PageContent>
+      </PageContainer>
+    );
+  }
   
   return (
     <PageContainer className="informacoes-page">
@@ -115,7 +199,7 @@ const Informacoes = () => {
             <InfoCard key={index}>
               <InfoIcon>{section.icon}</InfoIcon>
               <InfoTitle>{section.title}</InfoTitle>
-              <p>{section.text}</p>
+              <InfoText>{section.text}</InfoText>
               
               {section.map && (
                 <MapContainer>
