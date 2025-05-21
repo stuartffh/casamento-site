@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
+import { useConfig } from '../contexts/ConfigContext';
 
 const HomeContainer = styled.div`
   width: 100%;
@@ -170,13 +171,25 @@ const Home = () => {
   const [hours, setHours] = React.useState(0);
   const [minutes, setMinutes] = React.useState(0);
   const [seconds, setSeconds] = React.useState(0);
+  const { config, formatWeddingDate } = useConfig();
   
   React.useEffect(() => {
-    const weddingDate = new Date('September 20, 2025 19:00:00').getTime();
+    // Usar a data do casamento do contexto, ou fallback para uma data padrão
+    const weddingDateStr = config.weddingDate || 'September 20, 2025 19:00:00';
+    const weddingDate = new Date(weddingDateStr).getTime();
     
     const updateCountdown = () => {
       const now = new Date().getTime();
       const distance = weddingDate - now;
+      
+      // Verificar se a data já passou
+      if (distance < 0) {
+        setDays(0);
+        setHours(0);
+        setMinutes(0);
+        setSeconds(0);
+        return;
+      }
       
       setDays(Math.floor(distance / (1000 * 60 * 60 * 24)));
       setHours(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
@@ -188,19 +201,39 @@ const Home = () => {
     const interval = setInterval(updateCountdown, 1000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [config.weddingDate]);
+  
+  // Formatar a data do casamento para exibição
+  const formattedDate = React.useMemo(() => {
+    if (!config.weddingDate) return '20 de setembro de 2025, às 19:00';
+    
+    try {
+      const date = new Date(config.weddingDate);
+      const options = { 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      };
+      return new Intl.DateTimeFormat('pt-BR', options).format(date);
+    } catch (err) {
+      console.error('Erro ao formatar data:', err);
+      return config.weddingDate;
+    }
+  }, [config.weddingDate]);
   
   return (
     <HomeContainer>
       <HeroSection>
         <HeroOverlay />
         <HeroContent>
-          <HeroTitle className="fade-in">Marília & Iago</HeroTitle>
+          <HeroTitle className="fade-in">{config.siteTitle}</HeroTitle>
           <HeroSubtitle className="fade-in delay-1">
             Estamos muito felizes em ter você aqui!
           </HeroSubtitle>
           <HeroDate className="fade-in delay-2">
-            20 de setembro de 2025, às 19:00
+            {formattedDate}
           </HeroDate>
           
           <CountdownContainer className="fade-in delay-3">

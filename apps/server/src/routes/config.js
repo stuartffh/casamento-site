@@ -55,6 +55,8 @@ router.get('/', async (req, res) => {
       // Criar configuração padrão se não existir
       config = await prisma.config.create({
         data: {
+          siteTitle: 'Marília & Iago',
+          weddingDate: '',
           pixKey: '',
           pixDescription: '',
           mercadoPagoToken: '',
@@ -98,7 +100,7 @@ router.post('/upload-qrcode', authenticateJWT, upload.single('qrcode'), async (r
 // Atualizar configurações (protegido)
 router.put('/', authenticateJWT, async (req, res) => {
   try {
-    const { pixKey, pixDescription, mercadoPagoToken, pixQrCodeImage } = req.body;
+    const { siteTitle, weddingDate, pixKey, pixDescription, mercadoPagoToken, pixQrCodeImage } = req.body;
     
     let config = await prisma.config.findFirst();
     
@@ -106,6 +108,8 @@ router.put('/', authenticateJWT, async (req, res) => {
       config = await prisma.config.update({
         where: { id: config.id },
         data: {
+          siteTitle,
+          weddingDate,
           pixKey,
           pixDescription,
           mercadoPagoToken,
@@ -115,10 +119,12 @@ router.put('/', authenticateJWT, async (req, res) => {
     } else {
       config = await prisma.config.create({
         data: {
-          pixKey,
-          pixDescription,
-          mercadoPagoToken,
-          pixQrCodeImage
+          siteTitle: siteTitle || 'Marília & Iago',
+          weddingDate: weddingDate || '',
+          pixKey: pixKey || '',
+          pixDescription: pixDescription || '',
+          mercadoPagoToken: mercadoPagoToken || '',
+          pixQrCodeImage: pixQrCodeImage || ''
         }
       });
     }

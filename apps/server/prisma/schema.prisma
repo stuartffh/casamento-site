@@ -21,6 +21,8 @@ model User {
 
 model Config {
   id              Int      @id @default(autoincrement())
+  siteTitle       String?  // Título do site (nome do casal)
+  weddingDate     String?  // Data do casamento
   pixKey          String?
   pixDescription  String?
   pixQrCodeImage  String?  // Novo campo para armazenar a URL da imagem do QR Code

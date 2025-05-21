@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+import { useConfig } from '../contexts/ConfigContext';
 
 const HeaderContainer = styled.header`
   position: fixed;
@@ -107,6 +108,7 @@ const MobileMenuButton = styled.button`
 const Header = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const location = useLocation();
+  const { config } = useConfig();
   
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -119,7 +121,7 @@ const Header = () => {
   return (
     <HeaderContainer>
       <HeaderInner>
-        <Logo to="/">Marília & Iago</Logo>
+        <Logo to="/">{config.siteTitle}</Logo>
         
         <MobileMenuButton onClick={toggleMenu} aria-label="Menu de navegação">
           {isOpen ? '✕' : '☰'}

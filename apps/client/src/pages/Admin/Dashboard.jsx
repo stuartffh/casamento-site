@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useConfig } from '../../contexts/ConfigContext';
 import {
   AdminContainer,
   Sidebar,
@@ -97,6 +98,7 @@ const Dashboard = () => {
   });
   const [recentRSVPs, setRecentRSVPs] = useState([]);
   const [error, setError] = useState('');
+  const { config } = useConfig();
   
   useEffect(() => {
     const fetchStats = async () => {
@@ -164,7 +166,7 @@ const Dashboard = () => {
       <Sidebar>
         <Logo>
           <h1>
-            Marília <span>&</span> Iago
+            {config.siteTitle || 'Marília & Iago'}
           </h1>
         </Logo>
         
