@@ -1,164 +1,46 @@
-import React, { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import {
+  AdminContainer,
+  Sidebar,
+  Logo,
+  NavMenu,
+  NavItem,
+  NavLink,
+  Content,
+  Header,
+  PageTitle,
+  ActionButton,
+  SecondaryButton,
+  FormGroup,
+  Label,
+  Input,
+  TextArea,
+  SuccessMessage,
+  ErrorMessage
+} from '../../styles/AdminStyles';
+import styled from 'styled-components';
 
 const ConfigContainer = styled.div`
-  display: flex;
-  min-height: 100vh;
-`;
-
-const Sidebar = styled.div`
-  width: 250px;
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
-  padding: 2rem 0;
-`;
-
-const Logo = styled.div`
-  text-align: center;
-  margin-bottom: 2rem;
-  
-  h1 {
-    font-family: 'Playfair Display', serif;
-    color: var(--cor-branco);
-    font-size: 1.5rem;
-    
-    span {
-      color: var(--cor-primaria-clara);
-    }
-  }
-`;
-
-const NavMenu = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-`;
-
-const NavItem = styled.li`
-  margin-bottom: 0.5rem;
-`;
-
-const NavLink = styled(Link)`
-  display: block;
-  padding: 0.75rem 1.5rem;
-  color: var(--cor-branco);
-  text-decoration: none;
-  transition: background-color 0.3s ease;
-  
-  &:hover, &.active {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  &.active {
-    border-left: 3px solid var(--cor-primaria-clara);
-  }
-`;
-
-const Content = styled.div`
-  flex: 1;
-  padding: 2rem;
-  background-color: var(--cor-fundo);
-`;
-
-const Header = styled.header`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-`;
-
-const PageTitle = styled.h2`
-  color: var(--cor-primaria-escura);
-  font-size: 1.8rem;
-`;
-
-const LogoutButton = styled.button`
-  background: none;
-  border: 1px solid var(--cor-primaria-escura);
-  color: var(--cor-primaria-escura);
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    background-color: var(--cor-primaria-escura);
-    color: var(--cor-branco);
-  }
-`;
-
-const FormContainer = styled.div`
-  background-color: var(--cor-branco);
+  background-color: var(--white);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
-`;
-
-const FormSection = styled.div`
   margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid var(--cor-borda);
-  
-  &:last-child {
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: none;
-  }
 `;
 
-const SectionTitle = styled.h3`
-  color: var(--cor-primaria-escura);
+const ConfigTitle = styled.h3`
+  color: var(--accent);
   font-size: 1.2rem;
   margin-bottom: 1.5rem;
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 1.5rem;
-`;
-
-const Label = styled.label`
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--cor-primaria-escura);
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--cor-borda);
-  border-radius: 4px;
-  font-size: 1rem;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--cor-primaria-clara);
-  }
-`;
-
-const TextArea = styled.textarea`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--cor-borda);
-  border-radius: 4px;
-  font-size: 1rem;
-  min-height: 100px;
-  resize: vertical;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--cor-primaria-clara);
-  }
+  border-bottom: 1px solid rgba(182, 149, 192, 0.3);
+  padding-bottom: 0.5rem;
 `;
 
 const SubmitButton = styled.button`
   padding: 0.75rem 1.5rem;
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
+  background-color: var(--accent);
+  color: var(--white);
   border: none;
   border-radius: 4px;
   font-size: 1rem;
@@ -167,184 +49,130 @@ const SubmitButton = styled.button`
   transition: background-color 0.3s ease;
   
   &:hover {
-    background-color: var(--cor-primaria-clara);
+    background-color: var(--primary);
   }
   
   &:disabled {
-    background-color: var(--cor-borda);
+    background-color: rgba(182, 149, 192, 0.3);
     cursor: not-allowed;
   }
 `;
 
-const SuccessMessage = styled.div`
-  background-color: var(--cor-sucesso);
-  color: var(--cor-branco);
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
-`;
-
-const ErrorMessage = styled.div`
-  background-color: var(--cor-erro);
-  color: var(--cor-branco);
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
-`;
-
-// Novos componentes para upload de imagem
-const ImageUploadContainer = styled.div`
-  margin-bottom: 1.5rem;
-`;
-
 const ImagePreview = styled.div`
-  width: 200px;
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 300px;
   height: 200px;
-  border: 2px dashed var(--cor-borda);
+  border: 1px dashed rgba(182, 149, 192, 0.3);
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1rem;
-  cursor: pointer;
   overflow: hidden;
-  position: relative;
+  background-color: #f0f0f0;
+  cursor: pointer;
   
   img {
-    max-width: 100%;
-    max-height: 100%;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
-  }
-  
-  &:hover {
-    border-color: var(--cor-primaria-clara);
   }
 `;
 
 const ImageUploadButton = styled.button`
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--accent);
+  color: var(--white);
   border: none;
   border-radius: 4px;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
   cursor: pointer;
   
   &:hover {
-    background-color: var(--cor-primaria-clara);
+    background-color: var(--primary);
   }
 `;
 
-const HiddenFileInput = styled.input`
-  display: none;
-`;
-
 const Config = () => {
-  const [formData, setFormData] = useState({
+  const [config, setConfig] = useState({
+    siteTitle: '',
+    weddingDate: '',
     pixKey: '',
-    pixDescription: '',
-    mercadoPagoToken: '',
-    pixQrCodeImage: ''
+    pixDescription: ''
   });
+  const [qrCodeImage, setQrCodeImage] = useState(null);
+  const [qrCodePreview, setQrCodePreview] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [qrCodePreview, setQrCodePreview] = useState('');
-  const fileInputRef = useRef(null);
+  
+  // Referência para o input de arquivo
+  const fileInputRef = React.createRef();
   
   useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const response = await axios.get('http://localhost:3001/api/config', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        
-        if (response.data) {
-          setFormData({
-            pixKey: response.data.pixKey || '',
-            pixDescription: response.data.pixDescription || '',
-            mercadoPagoToken: response.data.mercadoPagoToken || '',
-            pixQrCodeImage: response.data.pixQrCodeImage || ''
-          });
-          
-          if (response.data.pixQrCodeImage) {
-            setQrCodePreview(`http://localhost:3001${response.data.pixQrCodeImage}`);
-          }
-        }
-      } catch (error) {
-        console.error('Erro ao buscar configurações:', error);
-        setError('Erro ao carregar configurações. Tente novamente mais tarde.');
-      }
-    };
-    
     fetchConfig();
   }, []);
   
+  const fetchConfig = async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/api/config');
+      
+      if (response.data) {
+        setConfig({
+          siteTitle: response.data.siteTitle || '',
+          weddingDate: response.data.weddingDate || '',
+          pixKey: response.data.pixKey || '',
+          pixDescription: response.data.pixDescription || ''
+        });
+        
+        // Verificar se há QR Code
+        if (response.data.pixQrCode) {
+          setQrCodePreview(`http://localhost:3001/uploads/pix/${response.data.pixQrCode}`);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao buscar configurações:', error);
+      setError('Erro ao carregar configurações. Tente novamente mais tarde.');
+    }
+  };
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setConfig({
+      ...config,
       [name]: value
     });
   };
   
-  const handleImageClick = () => {
+  const handleQrCodeClick = () => {
     fileInputRef.current.click();
   };
   
-  const handleFileChange = (e) => {
+  const handleQrCodeChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     
-    // Validar tipo de arquivo
-    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      setError('Tipo de arquivo inválido. Use JPG, PNG, GIF ou WebP.');
+    // Verificar tipo de arquivo
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Tipo de arquivo não suportado. Apenas imagens são permitidas.');
       return;
     }
     
-    // Validar tamanho (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Arquivo muito grande. O tamanho máximo é 5MB.');
+    // Verificar tamanho do arquivo (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setError('Arquivo muito grande. O tamanho máximo é 2MB.');
       return;
     }
     
-    // Criar preview
+    setQrCodeImage(file);
+    
+    // Criar preview da imagem
     const reader = new FileReader();
-    reader.onload = (e) => {
-      setQrCodePreview(e.target.result);
+    reader.onloadend = () => {
+      setQrCodePreview(reader.result);
     };
     reader.readAsDataURL(file);
-    
-    // Preparar para upload
-    uploadImage(file);
-  };
-  
-  const uploadImage = async (file) => {
-    try {
-      const formData = new FormData();
-      formData.append('qrcode', file);
-      
-      const response = await axios.post('http://localhost:3001/api/config/upload-qrcode', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      setFormData(prev => ({
-        ...prev,
-        pixQrCodeImage: response.data.imagePath
-      }));
-      
-      setSuccess('Imagem do QR Code enviada com sucesso!');
-    } catch (error) {
-      console.error('Erro ao fazer upload da imagem:', error);
-      setError('Erro ao fazer upload da imagem. Tente novamente.');
-      throw new Error('Erro ao fazer upload da imagem. Tente novamente.');
-    }
   };
   
   const handleSubmit = async (e) => {
@@ -355,11 +183,37 @@ const Config = () => {
     setError('');
     
     try {
-      await axios.put('http://localhost:3001/api/config', formData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const token = localStorage.getItem('token');
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
+      
+      // Primeiro, fazer upload do QR Code se houver um novo
+      let qrCodeFilename = null;
+      if (qrCodeImage) {
+        const formData = new FormData();
+        formData.append('qrcode', qrCodeImage);
+        
+        const uploadResponse = await axios.post('http://localhost:3001/api/config/upload-qrcode', formData, {
+          headers: {
+            ...headers,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        
+        qrCodeFilename = uploadResponse.data.filename;
+      }
+      
+      // Depois, atualizar as configurações
+      const configData = {
+        ...config
+      };
+      
+      if (qrCodeFilename) {
+        configData.pixQrCode = qrCodeFilename;
+      }
+      
+      await axios.put('http://localhost:3001/api/config', configData, { headers });
       
       setSuccess('Configurações salvas com sucesso!');
     } catch (error) {
@@ -377,7 +231,7 @@ const Config = () => {
   };
   
   return (
-    <ConfigContainer>
+    <AdminContainer>
       <Sidebar>
         <Logo>
           <h1>
@@ -413,81 +267,101 @@ const Config = () => {
       <Content>
         <Header>
           <PageTitle>Configurações</PageTitle>
-          <LogoutButton onClick={handleLogout}>Sair</LogoutButton>
+          <SecondaryButton onClick={handleLogout}>Sair</SecondaryButton>
         </Header>
         
-        <FormContainer>
-          {success && <SuccessMessage>{success}</SuccessMessage>}
-          {error && <ErrorMessage>{error}</ErrorMessage>}
+        {success && <SuccessMessage>{success}</SuccessMessage>}
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        
+        <form onSubmit={handleSubmit}>
+          <ConfigContainer>
+            <ConfigTitle>Configurações Gerais</ConfigTitle>
+            
+            <FormGroup>
+              <Label htmlFor="siteTitle">Título do Site</Label>
+              <Input
+                type="text"
+                id="siteTitle"
+                name="siteTitle"
+                value={config.siteTitle}
+                onChange={handleChange}
+                placeholder="Ex: Casamento Marília & Iago"
+              />
+            </FormGroup>
+            
+            <FormGroup>
+              <Label htmlFor="weddingDate">Data do Casamento</Label>
+              <Input
+                type="date"
+                id="weddingDate"
+                name="weddingDate"
+                value={config.weddingDate}
+                onChange={handleChange}
+              />
+            </FormGroup>
+          </ConfigContainer>
           
-          <form onSubmit={handleSubmit}>
-            <FormSection>
-              <SectionTitle>Configurações de PIX</SectionTitle>
-              
-              <FormGroup>
-                <Label htmlFor="pixKey">Chave PIX</Label>
-                <Input
-                  type="text"
-                  id="pixKey"
-                  name="pixKey"
-                  value={formData.pixKey}
-                  onChange={handleChange}
-                />
-              </FormGroup>
-              
-              <FormGroup>
-                <Label htmlFor="pixDescription">Descrição do PIX</Label>
-                <TextArea
-                  id="pixDescription"
-                  name="pixDescription"
-                  value={formData.pixDescription}
-                  onChange={handleChange}
-                />
-              </FormGroup>
-              
-              <ImageUploadContainer>
-                <Label>QR Code do PIX</Label>
-                <ImagePreview onClick={handleImageClick}>
-                  {qrCodePreview ? (
-                    <img src={qrCodePreview} alt="QR Code do PIX" />
-                  ) : (
-                    <span>Clique para selecionar uma imagem</span>
-                  )}
-                </ImagePreview>
-                <HiddenFileInput
-                  type="file"
-                  ref={fileInputRef}
-                  accept="image/jpeg,image/png,image/gif,image/webp"
-                  onChange={handleFileChange}
-                />
-                <ImageUploadButton type="button" onClick={handleImageClick}>
-                  Selecionar QR Code
-                </ImageUploadButton>
-              </ImageUploadContainer>
-            </FormSection>
+          <ConfigContainer>
+            <ConfigTitle>Configurações de PIX</ConfigTitle>
             
-            <FormSection>
-              <SectionTitle>Configurações do Mercado Pago</SectionTitle>
-              
-              <FormGroup>
-                <Label htmlFor="mercadoPagoToken">Access Token do Mercado Pago</Label>
-                <Input
-                  type="text"
-                  id="mercadoPagoToken"
-                  name="mercadoPagoToken"
-                  value={formData.mercadoPagoToken}
-                  onChange={handleChange}
-                />
-              </FormGroup>
-            </FormSection>
+            <FormGroup>
+              <Label htmlFor="pixKey">Chave PIX</Label>
+              <Input
+                type="text"
+                id="pixKey"
+                name="pixKey"
+                value={config.pixKey}
+                onChange={handleChange}
+                placeholder="Ex: email@exemplo.com"
+              />
+            </FormGroup>
             
-            <SubmitButton type="submit" disabled={isLoading}>
-              {isLoading ? 'Salvando...' : 'Salvar Configurações'}
-            </SubmitButton>
-          </form>
-        </FormContainer>
+            <FormGroup>
+              <Label htmlFor="pixDescription">Descrição do PIX</Label>
+              <TextArea
+                id="pixDescription"
+                name="pixDescription"
+                value={config.pixDescription}
+                onChange={handleChange}
+                placeholder="Ex: Presente de casamento para Marília e Iago"
+              />
+            </FormGroup>
+            
+            <FormGroup>
+              <Label>QR Code PIX</Label>
+              <ImagePreview onClick={handleQrCodeClick}>
+                {qrCodePreview ? (
+                  <img 
+                    src={qrCodePreview} 
+                    alt="QR Code PIX" 
+                    onError={() => {
+                      setQrCodePreview('');
+                      setError('Erro ao carregar imagem do QR Code.');
+                    }}
+                  />
+                ) : (
+                  <span>Clique para selecionar uma imagem</span>
+                )}
+              </ImagePreview>
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                accept="image/*"
+                onChange={handleQrCodeChange}
+              />
+              <ImageUploadButton type="button" onClick={handleQrCodeClick}>
+                Selecionar QR Code
+              </ImageUploadButton>
+            </FormGroup>
+          </ConfigContainer>
+          
+          <SubmitButton type="submit" disabled={isLoading}>
+            {isLoading ? 'Salvando...' : 'Salvar Configurações'}
+          </SubmitButton>
+        </form>
       </Content>
-    </ConfigContainer>
+    </AdminContainer>
   );
 };
 

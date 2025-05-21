@@ -1,93 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
-
-const DashboardContainer = styled.div`
-  display: flex;
-  min-height: 100vh;
-`;
-
-const Sidebar = styled.div`
-  width: 250px;
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
-  padding: 2rem 0;
-`;
-
-const Logo = styled.div`
-  text-align: center;
-  margin-bottom: 2rem;
-  
-  h1 {
-    font-family: 'Playfair Display', serif;
-    color: var(--cor-branco);
-    font-size: 1.5rem;
-    
-    span {
-      color: var(--cor-primaria-clara);
-    }
-  }
-`;
-
-const NavMenu = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-`;
-
-const NavItem = styled.li`
-  margin-bottom: 0.5rem;
-`;
-
-const NavLink = styled(Link)`
-  display: block;
-  padding: 0.75rem 1.5rem;
-  color: var(--cor-branco);
-  text-decoration: none;
-  transition: background-color 0.3s ease;
-  
-  &:hover, &.active {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  &.active {
-    border-left: 3px solid var(--cor-primaria-clara);
-  }
-`;
-
-const Content = styled.div`
-  flex: 1;
-  padding: 2rem;
-  background-color: var(--cor-fundo);
-`;
-
-const Header = styled.header`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-`;
-
-const PageTitle = styled.h2`
-  color: var(--cor-primaria-escura);
-  font-size: 1.8rem;
-`;
-
-const LogoutButton = styled.button`
-  background: none;
-  border: 1px solid var(--cor-primaria-escura);
-  color: var(--cor-primaria-escura);
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    background-color: var(--cor-primaria-escura);
-    color: var(--cor-branco);
-  }
-`;
+import {
+  AdminContainer,
+  Sidebar,
+  Logo,
+  NavMenu,
+  NavItem,
+  NavLink,
+  Content,
+  Header,
+  PageTitle,
+  ActionButton,
+  SecondaryButton,
+  Table,
+  Th,
+  Td,
+  Tr,
+  SuccessMessage,
+  ErrorMessage
+} from '../../styles/AdminStyles';
+import styled from 'styled-components';
 
 const StatsGrid = styled.div`
   display: grid;
@@ -105,7 +37,7 @@ const StatsGrid = styled.div`
 `;
 
 const StatCard = styled.div`
-  background-color: var(--cor-branco);
+  background-color: var(--white);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
@@ -115,24 +47,24 @@ const StatCard = styled.div`
 const StatValue = styled.div`
   font-size: 2.5rem;
   font-weight: 700;
-  color: var(--cor-primaria-escura);
+  color: var(--accent);
   margin-bottom: 0.5rem;
 `;
 
 const StatLabel = styled.div`
-  color: var(--cor-texto);
+  color: var(--text);
   font-size: 1rem;
 `;
 
 const RecentActivity = styled.div`
-  background-color: var(--cor-branco);
+  background-color: var(--white);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
 `;
 
 const ActivityTitle = styled.h3`
-  color: var(--cor-primaria-escura);
+  color: var(--accent);
   font-size: 1.2rem;
   margin-bottom: 1rem;
 `;
@@ -144,7 +76,7 @@ const ActivityList = styled.ul`
 
 const ActivityItem = styled.li`
   padding: 1rem 0;
-  border-bottom: 1px solid var(--cor-borda);
+  border-bottom: 1px solid var(--border);
   
   &:last-child {
     border-bottom: none;
@@ -164,6 +96,7 @@ const Dashboard = () => {
     fotos: 0
   });
   const [recentRSVPs, setRecentRSVPs] = useState([]);
+  const [error, setError] = useState('');
   
   useEffect(() => {
     const fetchStats = async () => {
@@ -204,6 +137,7 @@ const Dashboard = () => {
         }
       } catch (error) {
         console.error('Erro ao buscar estatísticas:', error);
+        setError('Erro ao carregar estatísticas. Tente novamente mais tarde.');
       }
     };
     
@@ -226,7 +160,7 @@ const Dashboard = () => {
   };
   
   return (
-    <DashboardContainer>
+    <AdminContainer>
       <Sidebar>
         <Logo>
           <h1>
@@ -262,8 +196,10 @@ const Dashboard = () => {
       <Content>
         <Header>
           <PageTitle>Dashboard</PageTitle>
-          <LogoutButton onClick={handleLogout}>Sair</LogoutButton>
+          <SecondaryButton onClick={handleLogout}>Sair</SecondaryButton>
         </Header>
+        
+        {error && <ErrorMessage>{error}</ErrorMessage>}
         
         <StatsGrid>
           <StatCard>
@@ -298,7 +234,7 @@ const Dashboard = () => {
           </ActivityList>
         </RecentActivity>
       </Content>
-    </DashboardContainer>
+    </AdminContainer>
   );
 };
 

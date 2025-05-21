@@ -1,99 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
-
-const AlbumContainer = styled.div`
-  display: flex;
-
-  
-  min-height: 100vh;
-`;
-
-const Sidebar = styled.div`
-  width: 250px;
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
-  padding: 2rem 0;
-`;
-
-const Logo = styled.div`
-  text-align: center;
-  margin-bottom: 2rem;
-  
-  h1 {
-    font-family: 'Playfair Display', serif;
-    color: var(--cor-branco);
-    font-size: 1.5rem;
-    
-    span {
-      color: var(--cor-primaria-clara);
-    }
-  }
-`;
-
-const NavMenu = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-`;
-
-const NavItem = styled.li`
-  margin-bottom: 0.5rem;
-`;
-
-const NavLink = styled(Link)`
-  display: block;
-  padding: 0.75rem 1.5rem;
-  color: var(--cor-branco);
-  text-decoration: none;
-  transition: background-color 0.3s ease;
-  
-  &:hover, &.active {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  &.active {
-    border-left: 3px solid var(--cor-primaria-clara);
-  }
-`;
-
-const Content = styled.div`
-  flex: 1;
-  padding: 2rem;
-  background-color: var(--cor-fundo);
-`;
-
-const Header = styled.header`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-`;
-
-const PageTitle = styled.h2`
-  color: var(--cor-primaria-escura);
-  font-size: 1.8rem;
-`;
-
-const ActionButton = styled.button`
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  
-  &:hover {
-    background-color: var(--cor-primaria-clara);
-  }
-`;
+import {
+  AdminContainer,
+  Sidebar,
+  Logo,
+  NavMenu,
+  NavItem,
+  NavLink,
+  Content,
+  Header,
+  PageTitle,
+  ActionButton,
+  SecondaryButton,
+  FormGroup,
+  Label,
+  Input,
+  Select,
+  SuccessMessage,
+  ErrorMessage,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  CloseButton,
+  EditButton,
+  DeleteButton
+} from '../../styles/AdminStyles';
+import styled from 'styled-components';
 
 const TabsContainer = styled.div`
   display: flex;
   margin-bottom: 2rem;
-  border-bottom: 1px solid var(--cor-borda);
+  border-bottom: 1px solid rgba(182, 149, 192, 0.3);
   flex-wrap: wrap;
 `;
 
@@ -103,7 +41,7 @@ const Tab = styled.button`
   border: none;
   font-size: 1.1rem;
   font-weight: ${props => props.active ? '600' : '400'};
-  color: ${props => props.active ? 'var(--cor-primaria-escura)' : 'var(--cor-texto)'};
+  color: ${props => props.active ? 'var(--accent)' : 'var(--text)'};
   position: relative;
   cursor: pointer;
   
@@ -114,7 +52,7 @@ const Tab = styled.button`
     left: 0;
     width: 100%;
     height: 3px;
-    background-color: var(--cor-primaria-escura);
+    background-color: var(--accent);
     opacity: ${props => props.active ? '1' : '0'};
     transition: opacity 0.3s ease;
   }
@@ -139,7 +77,7 @@ const PhotoGrid = styled.div`
 `;
 
 const PhotoCard = styled.div`
-  background-color: var(--cor-branco);
+  background-color: var(--white);
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -159,7 +97,7 @@ const PhotoInfo = styled.div`
 const PhotoTitle = styled.h3`
   font-size: 1rem;
   margin-bottom: 0.5rem;
-  color: var(--cor-primaria-escura);
+  color: var(--accent);
 `;
 
 const PhotoActions = styled.div`
@@ -168,132 +106,57 @@ const PhotoActions = styled.div`
   margin-top: 1rem;
 `;
 
-const EditButton = styled.button`
-  background-color: var(--cor-primaria-clara);
-  color: var(--cor-branco);
-  border: none;
-  padding: 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  
-  &:hover {
-    opacity: 0.9;
-  }
-`;
-
-const DeleteButton = styled.button`
-  background-color: var(--cor-erro);
-  color: var(--cor-branco);
-  border: none;
-  padding: 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  
-  &:hover {
-    opacity: 0.9;
-  }
-`;
-
 const OrderBadge = styled.div`
   position: absolute;
   top: 0.5rem;
   left: 0.5rem;
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
+  background-color: var(--accent);
+  color: var(--white);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-size: 0.8rem;
   font-weight: 600;
 `;
 
-const Modal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: ${props => props.show ? 'flex' : 'none'};
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background-color: var(--cor-branco);
-  border-radius: 8px;
-  padding: 2rem;
+const ImagePreview = styled.div`
+  margin-top: 1rem;
   width: 100%;
-  max-width: 500px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-`;
-
-const ModalHeader = styled.div`
+  max-width: 300px;
+  height: 200px;
+  border: 1px dashed rgba(182, 149, 192, 0.3);
+  border-radius: 4px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-`;
-
-const ModalTitle = styled.h3`
-  color: var(--cor-primaria-escura);
-  font-size: 1.5rem;
-  margin: 0;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 1.5rem;
+  justify-content: center;
+  overflow: hidden;
+  background-color: #f0f0f0;
   cursor: pointer;
-  color: var(--cor-texto);
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+const ImageUploadButton = styled.button`
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--accent);
+  color: var(--white);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
   
   &:hover {
-    color: var(--cor-primaria-escura);
-  }
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 1.5rem;
-`;
-
-const Label = styled.label`
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--cor-primaria-escura);
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--cor-borda);
-  border-radius: 4px;
-  font-size: 1rem;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--cor-primaria-clara);
-  }
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--cor-borda);
-  border-radius: 4px;
-  font-size: 1rem;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--cor-primaria-clara);
+    background-color: var(--primary);
   }
 `;
 
 const SubmitButton = styled.button`
   padding: 0.75rem 1.5rem;
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
+  background-color: var(--accent);
+  color: var(--white);
   border: none;
   border-radius: 4px;
   font-size: 1rem;
@@ -302,29 +165,32 @@ const SubmitButton = styled.button`
   transition: background-color 0.3s ease;
   
   &:hover {
-    background-color: var(--cor-primaria-clara);
+    background-color: var(--primary);
   }
   
   &:disabled {
-    background-color: var(--cor-borda);
+    background-color: rgba(182, 149, 192, 0.3);
     cursor: not-allowed;
   }
 `;
 
-const SuccessMessage = styled.div`
-  background-color: var(--cor-sucesso);
-  color: var(--cor-branco);
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
-`;
-
-const ErrorMessage = styled.div`
-  background-color: var(--cor-erro);
-  color: var(--cor-branco);
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 3rem;
+  background-color: var(--white);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  grid-column: 1 / -1;
+  
+  h3 {
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    color: var(--text);
+    margin-bottom: 1.5rem;
+  }
 `;
 
 const Album = () => {
@@ -347,6 +213,11 @@ const Album = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  
+  // Referência para o input de arquivo
+  const fileInputRef = React.createRef();
   
   useEffect(() => {
     fetchPhotos();
@@ -381,6 +252,7 @@ const Album = () => {
         title: photo.title || '',
         order: photo.order
       });
+      setImagePreview(photo.image || '');
     } else {
       setCurrentPhoto({
         id: null,
@@ -389,8 +261,12 @@ const Album = () => {
         title: '',
         order: photos[activeGallery] ? photos[activeGallery].length : 0
       });
+      setImagePreview('');
     }
     
+    setImageFile(null);
+    setSuccess('');
+    setError('');
     setShowModal(true);
   };
   
@@ -408,10 +284,63 @@ const Album = () => {
     });
   };
   
+  const handleImageClick = () => {
+    fileInputRef.current.click();
+  };
+  
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Verificar tipo de arquivo
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Tipo de arquivo não suportado. Apenas imagens são permitidas.');
+      return;
+    }
+    
+    // Verificar tamanho do arquivo (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Arquivo muito grande. O tamanho máximo é 5MB.');
+      return;
+    }
+    
+    setImageFile(file);
+    
+    // Criar preview da imagem
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+  
+  const uploadImage = async () => {
+    if (!imageFile) return null;
+    
+    try {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      
+      const token = localStorage.getItem('token');
+      const response = await axios.post('http://localhost:3001/api/album/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      return response.data.url;
+    } catch (error) {
+      console.error('Erro ao fazer upload da imagem:', error);
+      throw new Error('Erro ao fazer upload da imagem. Tente novamente.');
+    }
+  };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!currentPhoto.image) {
+    if (!currentPhoto.image && !imageFile) {
       setError('URL da imagem é obrigatória.');
       return;
     }
@@ -426,11 +355,25 @@ const Album = () => {
         Authorization: `Bearer ${token}`
       };
       
+      // Fazer upload da imagem se houver uma nova
+      let imageUrl = currentPhoto.image;
+      if (imageFile) {
+        imageUrl = await uploadImage();
+        if (!imageUrl) {
+          throw new Error('Erro ao fazer upload da imagem.');
+        }
+      }
+      
+      const photoData = {
+        ...currentPhoto,
+        image: imageUrl
+      };
+      
       if (modalMode === 'add') {
-        await axios.post('http://localhost:3001/api/album', currentPhoto, { headers });
+        await axios.post('http://localhost:3001/api/album', photoData, { headers });
         setSuccess('Foto adicionada com sucesso!');
       } else {
-        await axios.put(`http://localhost:3001/api/album/${currentPhoto.id}`, currentPhoto, { headers });
+        await axios.put(`http://localhost:3001/api/album/${currentPhoto.id}`, photoData, { headers });
         setSuccess('Foto atualizada com sucesso!');
       }
       
@@ -440,7 +383,7 @@ const Album = () => {
       }, 1500);
     } catch (error) {
       console.error('Erro ao salvar foto:', error);
-      setError('Erro ao salvar foto. Tente novamente mais tarde.');
+      setError(error.message || 'Erro ao salvar foto. Tente novamente mais tarde.');
     } finally {
       setIsLoading(false);
     }
@@ -507,7 +450,7 @@ const Album = () => {
   };
   
   return (
-    <AlbumContainer>
+    <AdminContainer>
       <Sidebar>
         <Logo>
           <h1>
@@ -545,7 +488,7 @@ const Album = () => {
           <PageTitle>Gerenciar Álbum</PageTitle>
           <div>
             <ActionButton onClick={() => handleOpenModal('add')}>Adicionar Foto</ActionButton>
-            <ActionButton onClick={handleLogout} style={{ marginLeft: '1rem', background: 'none', border: '1px solid var(--cor-primaria-escura)', color: 'var(--cor-primaria-escura)' }}>Sair</ActionButton>
+            <SecondaryButton onClick={handleLogout} style={{ marginLeft: '1rem' }}>Sair</SecondaryButton>
           </div>
         </Header>
         
@@ -584,7 +527,13 @@ const Album = () => {
             photos[activeGallery].map((photo, index) => (
               <PhotoCard key={photo.id}>
                 <OrderBadge>{index + 1}</OrderBadge>
-                <PhotoImage src={photo.image || '/images/placeholder.jpg'} alt={photo.title} />
+                <PhotoImage 
+                  src={photo.image || '/images/placeholder.jpg'} 
+                  alt={photo.title}
+                  onError={(e) => {
+                    e.target.src = '/images/placeholder.jpg';
+                  }}
+                />
                 <PhotoInfo>
                   <PhotoTitle>{photo.title || `Foto ${index + 1}`}</PhotoTitle>
                   <PhotoActions>
@@ -595,81 +544,100 @@ const Album = () => {
               </PhotoCard>
             ))
           ) : (
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem' }}>
-              Nenhuma foto cadastrada nesta galeria.
-            </div>
+            <EmptyState>
+              <h3>Nenhuma foto cadastrada</h3>
+              <p>Adicione fotos para a galeria {galleryNames[activeGallery]}.</p>
+              <ActionButton onClick={() => handleOpenModal('add')}>Adicionar Foto</ActionButton>
+            </EmptyState>
           )}
         </PhotoGrid>
+        
+        <Modal show={showModal} onClick={handleCloseModal}>
+          <ModalContent onClick={e => e.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>{modalMode === 'add' ? 'Adicionar Foto' : 'Editar Foto'}</ModalTitle>
+              <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
+            </ModalHeader>
+            
+            {success && <SuccessMessage>{success}</SuccessMessage>}
+            {error && <ErrorMessage>{error}</ErrorMessage>}
+            
+            <form onSubmit={handleSubmit}>
+              <FormGroup>
+                <Label htmlFor="gallery">Galeria</Label>
+                <Select
+                  id="gallery"
+                  name="gallery"
+                  value={currentPhoto.gallery}
+                  onChange={handleChange}
+                >
+                  <option value="preWedding">Pré-Wedding</option>
+                  <option value="momentos">Momentos Especiais</option>
+                  <option value="padrinhos">Padrinhos</option>
+                  <option value="festa">Festa</option>
+                </Select>
+              </FormGroup>
+              
+              <FormGroup>
+                <Label>Imagem *</Label>
+                <ImagePreview onClick={handleImageClick}>
+                  {imagePreview ? (
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      onError={() => {
+                        setImagePreview('');
+                        setError('Erro ao carregar imagem. Tente novamente.');
+                      }}
+                    />
+                  ) : (
+                    <span>Clique para selecionar uma imagem</span>
+                  )}
+                </ImagePreview>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+                <ImageUploadButton type="button" onClick={handleImageClick}>
+                  Selecionar Imagem
+                </ImageUploadButton>
+              </FormGroup>
+              
+              <FormGroup>
+                <Label htmlFor="title">Título</Label>
+                <Input
+                  type="text"
+                  id="title"
+                  name="title"
+                  value={currentPhoto.title}
+                  onChange={handleChange}
+                  placeholder="Ex: Ensaio na praia"
+                />
+              </FormGroup>
+              
+              <FormGroup>
+                <Label htmlFor="order">Ordem</Label>
+                <Input
+                  type="number"
+                  id="order"
+                  name="order"
+                  value={currentPhoto.order}
+                  onChange={handleChange}
+                  min="0"
+                />
+              </FormGroup>
+              
+              <SubmitButton type="submit" disabled={isLoading}>
+                {isLoading ? 'Salvando...' : 'Salvar'}
+              </SubmitButton>
+            </form>
+          </ModalContent>
+        </Modal>
       </Content>
-      
-      <Modal show={showModal} onClick={handleCloseModal}>
-        <ModalContent onClick={e => e.stopPropagation()}>
-          <ModalHeader>
-            <ModalTitle>{modalMode === 'add' ? 'Adicionar Foto' : 'Editar Foto'}</ModalTitle>
-            <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
-          </ModalHeader>
-          
-          {success && <SuccessMessage>{success}</SuccessMessage>}
-          {error && <ErrorMessage>{error}</ErrorMessage>}
-          
-          <form onSubmit={handleSubmit}>
-            <FormGroup>
-              <Label htmlFor="gallery">Galeria</Label>
-              <Select
-                id="gallery"
-                name="gallery"
-                value={currentPhoto.gallery}
-                onChange={handleChange}
-              >
-                <option value="preWedding">Pré-Wedding</option>
-                <option value="momentos">Momentos Especiais</option>
-                <option value="padrinhos">Padrinhos</option>
-                <option value="festa">Festa</option>
-              </Select>
-            </FormGroup>
-            
-            <FormGroup>
-              <Label htmlFor="image">URL da Imagem *</Label>
-              <Input
-                type="text"
-                id="image"
-                name="image"
-                value={currentPhoto.image}
-                onChange={handleChange}
-                required
-              />
-            </FormGroup>
-            
-            <FormGroup>
-              <Label htmlFor="title">Título</Label>
-              <Input
-                type="text"
-                id="title"
-                name="title"
-                value={currentPhoto.title}
-                onChange={handleChange}
-              />
-            </FormGroup>
-            
-            <FormGroup>
-              <Label htmlFor="order">Ordem</Label>
-              <Input
-                type="number"
-                id="order"
-                name="order"
-                value={currentPhoto.order}
-                onChange={handleChange}
-                min="0"
-              />
-            </FormGroup>
-            
-            <SubmitButton type="submit" disabled={isLoading}>
-              {isLoading ? 'Salvando...' : 'Salvar Foto'}
-            </SubmitButton>
-          </form>
-        </ModalContent>
-      </Modal>
-    </AlbumContainer>
+    </AdminContainer>
   );
 };
 

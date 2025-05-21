@@ -1,127 +1,36 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import styled from 'styled-components';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
-
-const PresentesContainer = styled.div`
-  display: flex;
-  min-height: 100vh;
-`;
-
-const Sidebar = styled.div`
-  width: 250px;
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
-  padding: 2rem 0;
-`;
-
-const Logo = styled.div`
-  text-align: center;
-  margin-bottom: 2rem;
-  
-  h1 {
-    font-family: 'Playfair Display', serif;
-    color: var(--cor-branco);
-    font-size: 1.5rem;
-    
-    span {
-      color: var(--cor-primaria-clara);
-    }
-  }
-`;
-
-const NavMenu = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-`;
-
-const NavItem = styled.li`
-  margin-bottom: 0.5rem;
-`;
-
-const NavLink = styled(Link)`
-  display: block;
-  padding: 0.75rem 1.5rem;
-  color: var(--cor-branco);
-  text-decoration: none;
-  transition: background-color 0.3s ease;
-  
-  &:hover, &.active {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  &.active {
-    border-left: 3px solid var(--cor-primaria-clara);
-  }
-`;
-
-const Content = styled.div`
-  flex: 1;
-  padding: 2rem;
-  background-color: var(--cor-fundo);
-`;
-
-const Header = styled.header`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-`;
-
-const PageTitle = styled.h2`
-  color: var(--cor-primaria-escura);
-  font-size: 1.8rem;
-`;
-
-const ActionButton = styled.button`
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  
-  &:hover {
-    background-color: var(--cor-primaria-clara);
-  }
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  background-color: var(--cor-branco);
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const Th = styled.th`
-  text-align: left;
-  padding: 1rem;
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
-`;
-
-const Td = styled.td`
-  padding: 1rem;
-  border-bottom: 1px solid var(--cor-borda);
-  
-  &:last-child {
-    text-align: right;
-  }
-`;
-
-const Tr = styled.tr`
-  &:last-child td {
-    border-bottom: none;
-  }
-  
-  &:hover {
-    background-color: var(--cor-fundo);
-  }
-`;
+import {
+  AdminContainer,
+  Sidebar,
+  Logo,
+  NavMenu,
+  NavItem,
+  NavLink,
+  Content,
+  Header,
+  PageTitle,
+  ActionButton,
+  SecondaryButton,
+  Table,
+  Th,
+  Td,
+  Tr,
+  FormGroup,
+  Label,
+  Input,
+  TextArea,
+  SuccessMessage,
+  ErrorMessage,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  CloseButton,
+  EditButton,
+  DeleteButton
+} from '../../styles/AdminStyles';
+import styled from 'styled-components';
 
 const PresenteImage = styled.img`
   width: 60px;
@@ -150,161 +59,12 @@ const ActionButtons = styled.div`
   justify-content: flex-end;
 `;
 
-const EditButton = styled.button`
-  background-color: var(--cor-primaria-clara);
-  color: var(--cor-branco);
-  border: none;
-  padding: 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  
-  &:hover {
-    opacity: 0.9;
-  }
-`;
-
-const DeleteButton = styled.button`
-  background-color: var(--cor-erro);
-  color: var(--cor-branco);
-  border: none;
-  padding: 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  
-  &:hover {
-    opacity: 0.9;
-  }
-`;
-
-const Modal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: ${props => props.show ? 'flex' : 'none'};
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background-color: var(--cor-branco);
-  border-radius: 8px;
-  padding: 2rem;
-  width: 100%;
-  max-width: 500px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-`;
-
-const ModalTitle = styled.h3`
-  color: var(--cor-primaria-escura);
-  font-size: 1.5rem;
-  margin: 0;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--cor-texto);
-  
-  &:hover {
-    color: var(--cor-primaria-escura);
-  }
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 1.5rem;
-`;
-
-const Label = styled.label`
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--cor-primaria-escura);
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--cor-borda);
-  border-radius: 4px;
-  font-size: 1rem;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--cor-primaria-clara);
-  }
-`;
-
-const TextArea = styled.textarea`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--cor-borda);
-  border-radius: 4px;
-  font-size: 1rem;
-  min-height: 100px;
-  resize: vertical;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--cor-primaria-clara);
-  }
-`;
-
-const SubmitButton = styled.button`
-  padding: 0.75rem 1.5rem;
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  
-  &:hover {
-    background-color: var(--cor-primaria-clara);
-  }
-  
-  &:disabled {
-    background-color: var(--cor-borda);
-    cursor: not-allowed;
-  }
-`;
-
-const SuccessMessage = styled.div`
-  background-color: var(--cor-sucesso);
-  color: var(--cor-branco);
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
-`;
-
-const ErrorMessage = styled.div`
-  background-color: var(--cor-erro);
-  color: var(--cor-branco);
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
-`;
-
 const ImagePreview = styled.div`
   margin-top: 1rem;
   width: 100%;
   max-width: 200px;
   height: 150px;
-  border: 1px dashed var(--cor-borda);
+  border: 1px dashed rgba(182, 149, 192, 0.3);
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -322,14 +82,35 @@ const ImagePreview = styled.div`
 const ImageUploadButton = styled.button`
   margin-top: 0.5rem;
   padding: 0.5rem 1rem;
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
+  background-color: var(--accent);
+  color: var(--white);
   border: none;
   border-radius: 4px;
   cursor: pointer;
   
   &:hover {
-    background-color: var(--cor-primaria-clara);
+    background-color: var(--primary);
+  }
+`;
+
+const SubmitButton = styled.button`
+  padding: 0.75rem 1.5rem;
+  background-color: var(--accent);
+  color: var(--white);
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  
+  &:hover {
+    background-color: var(--primary);
+  }
+  
+  &:disabled {
+    background-color: rgba(182, 149, 192, 0.3);
+    cursor: not-allowed;
   }
 `;
 
@@ -621,7 +402,7 @@ const Presentes = () => {
   };
   
   return (
-    <PresentesContainer>
+    <AdminContainer>
       <Sidebar>
         <Logo>
           <h1>
@@ -659,7 +440,7 @@ const Presentes = () => {
           <PageTitle>Gerenciar Presentes</PageTitle>
           <div>
             <ActionButton onClick={() => handleOpenModal('add')}>Adicionar Presente</ActionButton>
-            <ActionButton onClick={handleLogout} style={{ marginLeft: '1rem', background: 'none', border: '1px solid var(--cor-primaria-escura)', color: 'var(--cor-primaria-escura)' }}>Sair</ActionButton>
+            <SecondaryButton onClick={handleLogout} style={{ marginLeft: '1rem' }}>Sair</SecondaryButton>
           </div>
         </Header>
         
@@ -704,95 +485,93 @@ const Presentes = () => {
             )}
           </tbody>
         </Table>
+        
+        <Modal show={showModal} onClick={handleCloseModal}>
+          <ModalContent onClick={e => e.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>{modalMode === 'add' ? 'Adicionar Presente' : 'Editar Presente'}</ModalTitle>
+              <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
+            </ModalHeader>
+            
+            {success && <SuccessMessage>{success}</SuccessMessage>}
+            {error && <ErrorMessage>{error}</ErrorMessage>}
+            
+            <form onSubmit={handleSubmit}>
+              <FormGroup>
+                <Label htmlFor="name">Nome *</Label>
+                <Input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={currentPresente.name}
+                  onChange={handleChange}
+                  required
+                />
+              </FormGroup>
+              
+              <FormGroup>
+                <Label htmlFor="description">Descrição</Label>
+                <TextArea
+                  id="description"
+                  name="description"
+                  value={currentPresente.description}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+              
+              <FormGroup>
+                <Label htmlFor="price">Preço *</Label>
+                <Input
+                  type="number"
+                  id="price"
+                  name="price"
+                  value={currentPresente.price}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </FormGroup>
+              
+              <FormGroup>
+                <Label htmlFor="stock">Estoque</Label>
+                <Input
+                  type="number"
+                  id="stock"
+                  name="stock"
+                  value={currentPresente.stock}
+                  onChange={handleChange}
+                  min="0"
+                />
+              </FormGroup>
+              
+              <FormGroup>
+                <Label>Imagem</Label>
+                <ImagePreviewWithFallback
+                  src={imagePreview}
+                  alt={currentPresente.name}
+                  onClick={handleImageClick}
+                />
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+                <ImageUploadButton type="button" onClick={handleImageClick}>
+                  Selecionar Imagem
+                </ImageUploadButton>
+              </FormGroup>
+              
+              <SubmitButton type="submit" disabled={isLoading || uploadingImage}>
+                {isLoading ? 'Salvando...' : 'Salvar'}
+              </SubmitButton>
+            </form>
+          </ModalContent>
+        </Modal>
       </Content>
-      
-      <Modal show={showModal} onClick={handleCloseModal}>
-        <ModalContent onClick={e => e.stopPropagation()}>
-          <ModalHeader>
-            <ModalTitle>{modalMode === 'add' ? 'Adicionar Presente' : 'Editar Presente'}</ModalTitle>
-            <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
-          </ModalHeader>
-          
-          {success && <SuccessMessage>{success}</SuccessMessage>}
-          {error && <ErrorMessage>{error}</ErrorMessage>}
-          
-          <form onSubmit={handleSubmit}>
-            <FormGroup>
-              <Label htmlFor="name">Nome *</Label>
-              <Input
-                type="text"
-                id="name"
-                name="name"
-                value={currentPresente.name}
-                onChange={handleChange}
-                required
-              />
-            </FormGroup>
-            
-            <FormGroup>
-              <Label htmlFor="description">Descrição</Label>
-              <TextArea
-                id="description"
-                name="description"
-                value={currentPresente.description}
-                onChange={handleChange}
-              />
-            </FormGroup>
-            
-            <FormGroup>
-              <Label htmlFor="price">Preço *</Label>
-              <Input
-                type="number"
-                id="price"
-                name="price"
-                value={currentPresente.price}
-                onChange={handleChange}
-                step="0.01"
-                min="0"
-                required
-              />
-            </FormGroup>
-            
-            <FormGroup>
-              <Label>Imagem</Label>
-              <input
-                type="file"
-                ref={fileInputRef}
-                style={{ display: 'none' }}
-                onChange={handleImageChange}
-                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-              />
-              
-              <ImagePreviewWithFallback
-                src={imagePreview}
-                alt="Preview"
-                onClick={handleImageClick}
-              />
-              
-              <ImageUploadButton type="button" onClick={handleImageClick}>
-                {imagePreview ? 'Alterar imagem' : 'Selecionar imagem'}
-              </ImageUploadButton>
-            </FormGroup>
-            
-            <FormGroup>
-              <Label htmlFor="stock">Estoque</Label>
-              <Input
-                type="number"
-                id="stock"
-                name="stock"
-                value={currentPresente.stock}
-                onChange={handleChange}
-                min="0"
-              />
-            </FormGroup>
-            
-            <SubmitButton type="submit" disabled={isLoading || uploadingImage}>
-              {isLoading || uploadingImage ? 'Salvando...' : 'Salvar Presente'}
-            </SubmitButton>
-          </form>
-        </ModalContent>
-      </Modal>
-    </PresentesContainer>
+    </AdminContainer>
   );
 };
 

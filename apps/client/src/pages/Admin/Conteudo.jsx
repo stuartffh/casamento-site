@@ -1,98 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
-
-const ConteudoContainer = styled.div`
-  display: flex;
-  min-height: 100vh;
-`;
-
-const Sidebar = styled.div`
-  width: 250px;
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
-  padding: 2rem 0;
-`;
-
-const Logo = styled.div`
-  text-align: center;
-  margin-bottom: 2rem;
-  
-  h1 {
-    font-family: 'Playfair Display', serif;
-    color: var(--cor-branco);
-    font-size: 1.5rem;
-    
-    span {
-      color: var(--cor-primaria-clara);
-    }
-  }
-`;
-
-const NavMenu = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-`;
-
-const NavItem = styled.li`
-  margin-bottom: 0.5rem;
-`;
-
-const NavLink = styled(Link)`
-  display: block;
-  padding: 0.75rem 1.5rem;
-  color: var(--cor-branco);
-  text-decoration: none;
-  transition: background-color 0.3s ease;
-  
-  &:hover, &.active {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  &.active {
-    border-left: 3px solid var(--cor-primaria-clara);
-  }
-`;
-
-const Content = styled.div`
-  flex: 1;
-  padding: 2rem;
-  background-color: var(--cor-fundo);
-`;
-
-const Header = styled.header`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-`;
-
-const PageTitle = styled.h2`
-  color: var(--cor-primaria-escura);
-  font-size: 1.8rem;
-`;
-
-const LogoutButton = styled.button`
-  background: none;
-  border: 1px solid var(--cor-primaria-escura);
-  color: var(--cor-primaria-escura);
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    background-color: var(--cor-primaria-escura);
-    color: var(--cor-branco);
-  }
-`;
+import {
+  AdminContainer,
+  Sidebar,
+  Logo,
+  NavMenu,
+  NavItem,
+  NavLink,
+  Content,
+  Header,
+  PageTitle,
+  ActionButton,
+  SecondaryButton,
+  FormGroup,
+  Label,
+  Input,
+  TextArea,
+  Select,
+  SuccessMessage,
+  ErrorMessage,
+  Table,
+  Th,
+  Td,
+  Tr,
+  EditButton,
+  DeleteButton,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  CloseButton
+} from '../../styles/AdminStyles';
+import styled from 'styled-components';
 
 const TabsContainer = styled.div`
   display: flex;
   margin-bottom: 2rem;
-  border-bottom: 1px solid var(--cor-borda);
+  border-bottom: 1px solid rgba(182, 149, 192, 0.3);
+  flex-wrap: wrap;
 `;
 
 const Tab = styled.button`
@@ -101,7 +46,7 @@ const Tab = styled.button`
   border: none;
   font-size: 1.1rem;
   font-weight: ${props => props.active ? '600' : '400'};
-  color: ${props => props.active ? 'var(--cor-primaria-escura)' : 'var(--cor-texto)'};
+  color: ${props => props.active ? 'var(--accent)' : 'var(--text)'};
   position: relative;
   cursor: pointer;
   
@@ -112,33 +57,17 @@ const Tab = styled.button`
     left: 0;
     width: 100%;
     height: 3px;
-    background-color: var(--cor-primaria-escura);
+    background-color: var(--accent);
     opacity: ${props => props.active ? '1' : '0'};
     transition: opacity 0.3s ease;
   }
 `;
 
 const EditorContainer = styled.div`
-  background-color: var(--cor-branco);
+  background-color: var(--white);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 2rem;
-`;
-
-const TextArea = styled.textarea`
-  width: 100%;
-  min-height: 400px;
-  padding: 1rem;
-  border: 1px solid var(--cor-borda);
-  border-radius: 4px;
-  font-size: 1rem;
-  line-height: 1.6;
-  resize: vertical;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--cor-primaria-clara);
-  }
 `;
 
 const InfoFieldsContainer = styled.div`
@@ -148,7 +77,7 @@ const InfoFieldsContainer = styled.div`
 `;
 
 const InfoField = styled.div`
-  border: 1px solid var(--cor-borda);
+  border: 1px solid rgba(182, 149, 192, 0.3);
   border-radius: 8px;
   padding: 1.5rem;
   background-color: #f9f9f9;
@@ -167,24 +96,8 @@ const InfoFieldIcon = styled.div`
 
 const InfoFieldTitle = styled.h3`
   font-size: 1.2rem;
-  color: var(--cor-primaria-escura);
+  color: var(--accent);
   margin: 0;
-`;
-
-const InfoFieldTextArea = styled.textarea`
-  width: 100%;
-  min-height: 120px;
-  padding: 1rem;
-  border: 1px solid var(--cor-borda);
-  border-radius: 4px;
-  font-size: 1rem;
-  line-height: 1.6;
-  resize: vertical;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--cor-primaria-clara);
-  }
 `;
 
 const ButtonContainer = styled.div`
@@ -193,10 +106,10 @@ const ButtonContainer = styled.div`
   margin-top: 1.5rem;
 `;
 
-const SaveButton = styled.button`
+const SubmitButton = styled.button`
   padding: 0.75rem 1.5rem;
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
+  background-color: var(--accent);
+  color: var(--white);
   border: none;
   border-radius: 4px;
   font-size: 1rem;
@@ -205,25 +118,29 @@ const SaveButton = styled.button`
   transition: background-color 0.3s ease;
   
   &:hover {
-    background-color: var(--cor-primaria-clara);
+    background-color: var(--primary);
   }
   
   &:disabled {
-    background-color: var(--cor-borda);
+    background-color: rgba(182, 149, 192, 0.3);
     cursor: not-allowed;
   }
 `;
 
+const PreviewButton = styled(SecondaryButton)`
+  margin-right: 1rem;
+`;
+
 const PreviewContainer = styled.div`
   margin-top: 2rem;
-  background-color: var(--cor-branco);
+  background-color: var(--white);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 2rem;
 `;
 
 const PreviewTitle = styled.h3`
-  color: var(--cor-primaria-escura);
+  color: var(--accent);
   font-size: 1.2rem;
   margin-bottom: 1rem;
 `;
@@ -243,7 +160,7 @@ const PreviewGrid = styled.div`
 `;
 
 const PreviewCard = styled.div`
-  border: 1px solid var(--cor-borda);
+  border: 1px solid rgba(182, 149, 192, 0.3);
   border-radius: 8px;
   padding: 1.5rem;
   text-align: center;
@@ -251,30 +168,14 @@ const PreviewCard = styled.div`
 
 const PreviewCardIcon = styled.div`
   font-size: 2rem;
-  color: var(--cor-primaria-escura);
+  color: var(--accent);
   margin-bottom: 1rem;
 `;
 
 const PreviewCardTitle = styled.h4`
   font-size: 1.2rem;
-  color: var(--cor-primaria-escura);
+  color: var(--accent);
   margin-bottom: 1rem;
-`;
-
-const SuccessMessage = styled.div`
-  background-color: var(--cor-sucesso);
-  color: var(--cor-branco);
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
-`;
-
-const ErrorMessage = styled.div`
-  background-color: var(--cor-erro);
-  color: var(--cor-branco);
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
 `;
 
 const Conteudo = () => {
@@ -476,7 +377,7 @@ const Conteudo = () => {
               <InfoFieldIcon>🏛️</InfoFieldIcon>
               <InfoFieldTitle>Cerimônia</InfoFieldTitle>
             </InfoFieldHeader>
-            <InfoFieldTextArea
+            <TextArea
               value={infoFields.cerimonia}
               onChange={(e) => handleInfoFieldChange('cerimonia', e.target.value)}
               placeholder="Informe os detalhes da cerimônia..."
@@ -488,7 +389,7 @@ const Conteudo = () => {
               <InfoFieldIcon>🥂</InfoFieldIcon>
               <InfoFieldTitle>Recepção</InfoFieldTitle>
             </InfoFieldHeader>
-            <InfoFieldTextArea
+            <TextArea
               value={infoFields.recepcao}
               onChange={(e) => handleInfoFieldChange('recepcao', e.target.value)}
               placeholder="Informe os detalhes da recepção..."
@@ -500,7 +401,7 @@ const Conteudo = () => {
               <InfoFieldIcon>👔</InfoFieldIcon>
               <InfoFieldTitle>Dress Code</InfoFieldTitle>
             </InfoFieldHeader>
-            <InfoFieldTextArea
+            <TextArea
               value={infoFields.dressCode}
               onChange={(e) => handleInfoFieldChange('dressCode', e.target.value)}
               placeholder="Informe o dress code..."
@@ -512,7 +413,7 @@ const Conteudo = () => {
               <InfoFieldIcon>🏨</InfoFieldIcon>
               <InfoFieldTitle>Hospedagem Sugerida</InfoFieldTitle>
             </InfoFieldHeader>
-            <InfoFieldTextArea
+            <TextArea
               value={infoFields.hospedagem}
               onChange={(e) => handleInfoFieldChange('hospedagem', e.target.value)}
               placeholder="Informe as opções de hospedagem..."
@@ -524,7 +425,7 @@ const Conteudo = () => {
               <InfoFieldIcon>🚗</InfoFieldIcon>
               <InfoFieldTitle>Transporte</InfoFieldTitle>
             </InfoFieldHeader>
-            <InfoFieldTextArea
+            <TextArea
               value={infoFields.transporte}
               onChange={(e) => handleInfoFieldChange('transporte', e.target.value)}
               placeholder="Informe as opções de transporte..."
@@ -538,13 +439,14 @@ const Conteudo = () => {
           value={content} 
           onChange={handleContentChange}
           placeholder="Digite o conteúdo aqui..."
+          style={{ minHeight: '400px' }}
         />
       );
     }
   };
   
   return (
-    <ConteudoContainer>
+    <AdminContainer>
       <Sidebar>
         <Logo>
           <h1>
@@ -580,7 +482,7 @@ const Conteudo = () => {
       <Content>
         <Header>
           <PageTitle>Gerenciar Conteúdo</PageTitle>
-          <LogoutButton onClick={handleLogout}>Sair</LogoutButton>
+          <SecondaryButton onClick={handleLogout}>Sair</SecondaryButton>
         </Header>
         
         {success && <SuccessMessage>{success}</SuccessMessage>}
@@ -611,33 +513,25 @@ const Conteudo = () => {
           {renderEditor()}
           
           <ButtonContainer>
-            <SaveButton 
-              onClick={togglePreview} 
-              style={{ 
-                marginRight: '1rem', 
-                background: 'none', 
-                border: '1px solid var(--cor-primaria-escura)', 
-                color: 'var(--cor-primaria-escura)' 
-              }}
-            >
-              {showPreview ? 'Ocultar Prévia' : 'Mostrar Prévia'}
-            </SaveButton>
-            <SaveButton onClick={handleSave} disabled={isLoading}>
+            <PreviewButton onClick={togglePreview}>
+              {showPreview ? 'Ocultar Preview' : 'Visualizar Preview'}
+            </PreviewButton>
+            <SubmitButton onClick={handleSave} disabled={isLoading}>
               {isLoading ? 'Salvando...' : 'Salvar Conteúdo'}
-            </SaveButton>
+            </SubmitButton>
           </ButtonContainer>
+          
+          {showPreview && (
+            <PreviewContainer>
+              <PreviewTitle>Preview</PreviewTitle>
+              <PreviewContent>
+                {formatPreview()}
+              </PreviewContent>
+            </PreviewContainer>
+          )}
         </EditorContainer>
-        
-        {showPreview && (
-          <PreviewContainer>
-            <PreviewTitle>Prévia</PreviewTitle>
-            <PreviewContent>
-              {formatPreview()}
-            </PreviewContent>
-          </PreviewContainer>
-        )}
       </Content>
-    </ConteudoContainer>
+    </AdminContainer>
   );
 };
 

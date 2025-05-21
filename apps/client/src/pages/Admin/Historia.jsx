@@ -1,309 +1,61 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
-import { FaPlus, FaEdit, FaTrash, FaImage, FaCalendarAlt, FaHeading, FaAlignLeft, FaSortAmountDown } from 'react-icons/fa';
+import {
+  AdminContainer,
+  Sidebar,
+  Logo,
+  NavMenu,
+  NavItem,
+  NavLink,
+  Content,
+  Header,
+  PageTitle,
+  ActionButton,
+  SecondaryButton,
+  FormGroup,
+  Label,
+  Input,
+  TextArea,
+  SuccessMessage,
+  ErrorMessage,
+  Table,
+  Th,
+  Td,
+  Tr,
+  EditButton,
+  DeleteButton,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  CloseButton
+} from '../../styles/AdminStyles';
+import styled from 'styled-components';
 
-const StoryContainer = styled.div`
-  display: flex;
-  min-height: 100vh;
+const EventsContainer = styled.div`
+  margin-top: 2rem;
 `;
 
-const Sidebar = styled.div`
-  width: 250px;
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
-  padding: 2rem 0;
-`;
-
-const Logo = styled.div`
-  text-align: center;
-  margin-bottom: 2rem;
-  
-  h1 {
-    font-family: 'Playfair Display', serif;
-    color: var(--cor-branco);
-    font-size: 1.5rem;
-    
-    span {
-      color: var(--cor-primaria-clara);
-    }
-  }
-`;
-
-const NavMenu = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-`;
-
-const NavItem = styled.li`
-  margin-bottom: 0.5rem;
-`;
-
-const NavLink = styled(Link)`
-  display: block;
-  padding: 0.75rem 1.5rem;
-  color: var(--cor-branco);
-  text-decoration: none;
-  transition: background-color 0.3s ease;
-  
-  &:hover, &.active {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  &.active {
-    border-left: 3px solid var(--cor-primaria-clara);
-  }
-`;
-
-const Content = styled.div`
-  flex: 1;
-  padding: 2rem;
-  background-color: var(--cor-fundo);
-`;
-
-const Header = styled.header`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-`;
-
-const PageTitle = styled.h2`
-  color: var(--cor-primaria-escura);
-  font-size: 1.8rem;
-`;
-
-const LogoutButton = styled.button`
-  background: none;
-  border: 1px solid var(--cor-primaria-escura);
-  color: var(--cor-primaria-escura);
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    background-color: var(--cor-primaria-escura);
-    color: var(--cor-branco);
-  }
-`;
-
-const ActionButton = styled.button`
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  
-  &:hover {
-    background-color: var(--cor-primaria-clara);
-  }
-`;
-
-const StoryList = styled.div`
-  background-color: var(--cor-branco);
+const EventCard = styled.div`
+  background-color: var(--white);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
-  margin-top: 1.5rem;
-`;
-
-const StoryTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  
-  th, td {
-    padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid var(--cor-borda);
-  }
-  
-  th {
-    font-weight: 600;
-    color: var(--cor-primaria-escura);
-  }
-  
-  tr:last-child td {
-    border-bottom: none;
-  }
-  
-  tr:hover {
-    background-color: rgba(0, 0, 0, 0.02);
-  }
-`;
-
-const StoryImage = styled.img`
-  width: 80px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 4px;
-`;
-
-const StoryImagePlaceholder = styled.div`
-  width: 80px;
-  height: 60px;
-  background-color: #f0f0f0;
-  border-radius: 4px;
+  margin-bottom: 1.5rem;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #999;
-  font-size: 0.8rem;
-  text-align: center;
-`;
-
-const ActionButtons = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`;
-
-const EditButton = styled.button`
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
-  border: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+  gap: 1.5rem;
   
-  &:hover {
-    background-color: var(--cor-primaria-clara);
+  @media (max-width: 768px) {
+    flex-direction: column;
   }
 `;
 
-const DeleteButton = styled.button`
-  background-color: var(--cor-erro);
-  color: var(--cor-branco);
-  border: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  
-  &:hover {
-    background-color: #d32f2f;
-  }
-`;
-
-const Modal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background-color: var(--cor-branco);
+const EventImage = styled.div`
+  width: 150px;
+  height: 150px;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  padding: 2rem;
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  
-  h3 {
-    color: var(--cor-primaria-escura);
-    font-size: 1.5rem;
-    margin: 0;
-  }
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--cor-texto);
-  
-  &:hover {
-    color: var(--cor-primaria-escura);
-  }
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 1.5rem;
-`;
-
-const Label = styled.label`
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--cor-primaria-escura);
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--cor-borda);
-  border-radius: 4px;
-  font-size: 1rem;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--cor-primaria-clara);
-  }
-`;
-
-const TextArea = styled.textarea`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--cor-borda);
-  border-radius: 4px;
-  font-size: 1rem;
-  min-height: 150px;
-  resize: vertical;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--cor-primaria-clara);
-  }
-`;
-
-const ImageUploadContainer = styled.div`
-  margin-top: 1rem;
-`;
-
-const ImagePreview = styled.div`
-  width: 100%;
-  height: 200px;
-  border: 2px dashed var(--cor-borda);
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1rem;
-  cursor: pointer;
   overflow: hidden;
-  position: relative;
+  flex-shrink: 0;
   
   img {
     width: 100%;
@@ -311,161 +63,137 @@ const ImagePreview = styled.div`
     object-fit: cover;
   }
   
-  span {
-    color: var(--cor-texto);
-    font-size: 0.9rem;
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 200px;
   }
+`;
+
+const EventImageFallback = styled.div`
+  width: 150px;
+  height: 150px;
+  border-radius: 8px;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 0.9rem;
+  text-align: center;
+  flex-shrink: 0;
   
-  &:hover {
-    border-color: var(--cor-primaria-clara);
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 200px;
   }
 `;
 
-const FileInput = styled.input`
-  display: none;
+const EventInfo = styled.div`
+  flex: 1;
 `;
 
-const ModalFooter = styled.div`
+const EventDate = styled.div`
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+`;
+
+const EventTitle = styled.h3`
+  color: var(--text);
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+`;
+
+const EventText = styled.div`
+  color: var(--text);
+  margin-bottom: 1rem;
+  line-height: 1.6;
+`;
+
+const EventActions = styled.div`
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
+  gap: 0.5rem;
 `;
 
-const CancelButton = styled.button`
-  background: none;
-  border: 1px solid var(--cor-borda);
-  color: var(--cor-texto);
-  padding: 0.75rem 1.5rem;
+const ImagePreview = styled.div`
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 300px;
+  height: 200px;
+  border: 1px dashed rgba(182, 149, 192, 0.3);
   border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: #f0f0f0;
   cursor: pointer;
-  transition: all 0.3s ease;
   
-  &:hover {
-    background-color: var(--cor-borda);
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 `;
 
-const SaveButton = styled.button`
-  background-color: var(--cor-primaria-escura);
-  color: var(--cor-branco);
+const ImageUploadButton = styled.button`
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--accent);
+  color: var(--white);
   border: none;
-  padding: 0.75rem 1.5rem;
   border-radius: 4px;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: var(--primary);
+  }
+`;
+
+const SubmitButton = styled.button`
+  padding: 0.75rem 1.5rem;
+  background-color: var(--accent);
+  color: var(--white);
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
   transition: background-color 0.3s ease;
   
   &:hover {
-    background-color: var(--cor-primaria-clara);
+    background-color: var(--primary);
   }
   
   &:disabled {
-    background-color: var(--cor-borda);
+    background-color: rgba(182, 149, 192, 0.3);
     cursor: not-allowed;
   }
 `;
 
-const ConfirmModal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const ConfirmContent = styled.div`
-  background-color: var(--cor-branco);
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 90%;
-  max-width: 400px;
-  padding: 2rem;
+const EmptyState = styled.div`
   text-align: center;
-`;
-
-const ConfirmTitle = styled.h3`
-  color: var(--cor-primaria-escura);
-  margin-bottom: 1rem;
-`;
-
-const ConfirmText = styled.p`
-  margin-bottom: 2rem;
-  color: var(--cor-texto);
-`;
-
-const ConfirmButtons = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-`;
-
-const SuccessMessage = styled.div`
-  background-color: var(--cor-sucesso);
-  color: var(--cor-branco);
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
-`;
-
-const ErrorMessage = styled.div`
-  background-color: var(--cor-erro);
-  color: var(--cor-branco);
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
-`;
-
-const ImagePreviewWithFallback = ({ src, alt, onClick }) => {
-  const [hasError, setHasError] = useState(!src);
+  padding: 3rem;
+  background-color: var(--white);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   
-  if (!src || hasError) {
-    return (
-      <ImagePreview onClick={onClick}>
-        <span>Clique para selecionar uma imagem</span>
-      </ImagePreview>
-    );
+  h3 {
+    color: var(--accent);
+    margin-bottom: 1rem;
   }
   
-  return (
-    <ImagePreview onClick={onClick}>
-      <img 
-        src={src} 
-        alt={alt || 'Preview'} 
-        onError={() => setHasError(true)}
-      />
-    </ImagePreview>
-  );
-};
-
-const StoryImageWithFallback = ({ src, alt }) => {
-  const [hasError, setHasError] = useState(!src);
-  
-  if (!src || hasError) {
-    return (
-      <StoryImagePlaceholder>
-        Sem imagem
-      </StoryImagePlaceholder>
-    );
+  p {
+    color: var(--text);
+    margin-bottom: 1.5rem;
   }
-  
-  return (
-    <StoryImage 
-      src={src} 
-      alt={alt}
-      onError={() => setHasError(true)}
-    />
-  );
-};
+`;
 
-const NossaHistoria = () => {
-  const [storyEvents, setStoryEvents] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+const Historia = () => {
+  const [events, setEvents] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState('add'); // 'add' ou 'edit'
   const [currentEvent, setCurrentEvent] = useState({
     id: null,
     date: '',
@@ -474,38 +202,54 @@ const NossaHistoria = () => {
     image: '',
     order: 0
   });
-  const [isEditing, setIsEditing] = useState(false);
-  const [eventToDelete, setEventToDelete] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  
+  // Referência para o input de arquivo
+  const fileInputRef = React.createRef();
   
   useEffect(() => {
-    fetchStoryEvents();
+    fetchEvents();
   }, []);
   
-  const fetchStoryEvents = async () => {
+  const fetchEvents = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:3001/api/story-events');
       
-      const response = await axios.get('http://localhost:3001/api/story-events', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      // Ordenar eventos por ordem e data
+      const sortedEvents = response.data.sort((a, b) => {
+        if (a.order !== b.order) {
+          return a.order - b.order;
+        }
+        return new Date(a.createdAt) - new Date(b.createdAt);
       });
       
-      setStoryEvents(response.data);
+      setEvents(sortedEvents);
     } catch (error) {
-      console.error('Erro ao buscar eventos da história:', error);
-      setError('Erro ao carregar eventos da história. Tente novamente mais tarde.');
+      console.error('Erro ao buscar eventos:', error);
+      setError('Erro ao carregar eventos. Tente novamente mais tarde.');
     } finally {
       setIsLoading(false);
     }
   };
   
-  const handleOpenModal = (event = null) => {
-    if (event) {
-      setCurrentEvent(event);
-      setIsEditing(true);
+  const handleOpenModal = (mode, event = null) => {
+    setModalMode(mode);
+    
+    if (mode === 'edit' && event) {
+      setCurrentEvent({
+        id: event.id,
+        date: event.date || '',
+        title: event.title || '',
+        text: event.text || '',
+        image: event.image || '',
+        order: event.order || 0
+      });
+      setImagePreview(event.image || '');
     } else {
       setCurrentEvent({
         id: null,
@@ -513,50 +257,70 @@ const NossaHistoria = () => {
         title: '',
         text: '',
         image: '',
-        order: storyEvents.length
+        order: events.length
       });
-      setIsEditing(false);
+      setImagePreview('');
     }
     
-    setIsModalOpen(true);
+    setImageFile(null);
+    setSuccess('');
+    setError('');
+    setShowModal(true);
   };
   
   const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setCurrentEvent({
-      id: null,
-      date: '',
-      title: '',
-      text: '',
-      image: '',
-      order: 0
-    });
-    setIsEditing(false);
+    setShowModal(false);
+    setSuccess('');
+    setError('');
   };
   
-  const handleInputChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setCurrentEvent(prev => ({
-      ...prev,
+    setCurrentEvent({
+      ...currentEvent,
       [name]: value
-    }));
+    });
   };
   
-  const handleImageSelect = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      uploadImage(file);
+  const handleImageClick = () => {
+    fileInputRef.current.click();
+  };
+  
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Verificar tipo de arquivo
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Tipo de arquivo não suportado. Apenas imagens são permitidas.');
+      return;
     }
+    
+    // Verificar tamanho do arquivo (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Arquivo muito grande. O tamanho máximo é 5MB.');
+      return;
+    }
+    
+    setImageFile(file);
+    
+    // Criar preview da imagem
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
   
-  const uploadImage = async (file) => {
+  const uploadImage = async () => {
+    if (!imageFile) return null;
+    
     try {
-      setIsLoading(true);
-      const token = localStorage.getItem('token');
-      
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append('image', imageFile);
       
+      const token = localStorage.getItem('token');
       const response = await axios.post('http://localhost:3001/api/story-events/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -564,101 +328,83 @@ const NossaHistoria = () => {
         }
       });
       
-      setCurrentEvent(prev => ({
-        ...prev,
-        image: response.data.imageUrl
-      }));
+      return response.data.url;
     } catch (error) {
       console.error('Erro ao fazer upload da imagem:', error);
-      setError('Erro ao fazer upload da imagem. Tente novamente.');
-    } finally {
-      setIsLoading(false);
+      throw new Error('Erro ao fazer upload da imagem. Tente novamente.');
     }
   };
   
-  const handleSave = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!currentEvent.date || !currentEvent.title || !currentEvent.text) {
+      setError('Data, título e história são obrigatórios.');
+      return;
+    }
+    
+    setIsLoading(true);
+    setSuccess('');
+    setError('');
+    
     try {
-      setIsLoading(true);
-      setSuccess('');
-      setError('');
-      
-      // Validações básicas
-      if (!currentEvent.date || !currentEvent.title || !currentEvent.text) {
-        setError('Data, título e texto são obrigatórios.');
-        setIsLoading(false);
-        return;
-      }
-      
       const token = localStorage.getItem('token');
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
       
-      if (isEditing) {
-        // Atualizar evento existente
-        await axios.put(`http://localhost:3001/api/story-events/${currentEvent.id}`, currentEvent, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        
-        setSuccess('Evento atualizado com sucesso!');
-      } else {
-        // Criar novo evento
-        await axios.post('http://localhost:3001/api/story-events', currentEvent, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        
-        setSuccess('Evento criado com sucesso!');
+      // Fazer upload da imagem se houver uma nova
+      let imageUrl = currentEvent.image;
+      if (imageFile) {
+        imageUrl = await uploadImage();
+        if (!imageUrl) {
+          throw new Error('Erro ao fazer upload da imagem.');
+        }
       }
       
-      // Recarregar a lista de eventos
-      fetchStoryEvents();
+      const eventData = {
+        ...currentEvent,
+        image: imageUrl
+      };
       
-      // Fechar o modal após um breve delay
+      if (modalMode === 'add') {
+        await axios.post('http://localhost:3001/api/story-events', eventData, { headers });
+        setSuccess('Evento adicionado com sucesso!');
+      } else {
+        await axios.put(`http://localhost:3001/api/story-events/${currentEvent.id}`, eventData, { headers });
+        setSuccess('Evento atualizado com sucesso!');
+      }
+      
+      fetchEvents();
       setTimeout(() => {
         handleCloseModal();
       }, 1500);
     } catch (error) {
       console.error('Erro ao salvar evento:', error);
-      setError('Erro ao salvar evento. Tente novamente mais tarde.');
+      setError(error.message || 'Erro ao salvar evento. Tente novamente mais tarde.');
     } finally {
       setIsLoading(false);
     }
   };
   
-  const handleOpenConfirmModal = (event) => {
-    setEventToDelete(event);
-    setIsConfirmModalOpen(true);
-  };
-  
-  const handleCloseConfirmModal = () => {
-    setIsConfirmModalOpen(false);
-    setEventToDelete(null);
-  };
-  
-  const handleDelete = async () => {
+  const handleDelete = async (id) => {
+    if (!window.confirm('Tem certeza que deseja excluir este evento?')) {
+      return;
+    }
+    
     try {
-      setIsLoading(true);
-      
       const token = localStorage.getItem('token');
-      
-      await axios.delete(`http://localhost:3001/api/story-events/${eventToDelete.id}`, {
+      await axios.delete(`http://localhost:3001/api/story-events/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
       
-      // Recarregar a lista de eventos
-      fetchStoryEvents();
-      
+      fetchEvents();
       setSuccess('Evento excluído com sucesso!');
-      handleCloseConfirmModal();
     } catch (error) {
       console.error('Erro ao excluir evento:', error);
       setError('Erro ao excluir evento. Tente novamente mais tarde.');
-      handleCloseConfirmModal();
-    } finally {
-      setIsLoading(false);
     }
   };
   
@@ -669,7 +415,7 @@ const NossaHistoria = () => {
   };
   
   return (
-    <StoryContainer>
+    <AdminContainer>
       <Sidebar>
         <Logo>
           <h1>
@@ -704,182 +450,157 @@ const NossaHistoria = () => {
       
       <Content>
         <Header>
-          <PageTitle>Gerenciar Nossa História</PageTitle>
-          <LogoutButton onClick={handleLogout}>Sair</LogoutButton>
+          <PageTitle>Nossa História</PageTitle>
+          <div>
+            <ActionButton onClick={() => handleOpenModal('add')}>Adicionar Evento</ActionButton>
+            <SecondaryButton onClick={handleLogout} style={{ marginLeft: '1rem' }}>Sair</SecondaryButton>
+          </div>
         </Header>
         
         {success && <SuccessMessage>{success}</SuccessMessage>}
         {error && <ErrorMessage>{error}</ErrorMessage>}
         
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <ActionButton onClick={() => handleOpenModal()}>
-            <FaPlus /> Adicionar Evento
-          </ActionButton>
-        </div>
+        <EventsContainer>
+          {isLoading ? (
+            <div style={{ textAlign: 'center', padding: '2rem' }}>Carregando...</div>
+          ) : events.length > 0 ? (
+            events.map((event, index) => (
+              <EventCard key={event.id}>
+                {event.image ? (
+                  <EventImage>
+                    <img 
+                      src={event.image} 
+                      alt={event.title}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.parentNode.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f0f0f0;color:#999;font-size:0.9rem;text-align:center;">Imagem não disponível</div>`;
+                      }}
+                    />
+                  </EventImage>
+                ) : (
+                  <EventImageFallback>
+                    Sem imagem
+                  </EventImageFallback>
+                )}
+                
+                <EventInfo>
+                  <EventDate>{event.date}</EventDate>
+                  <EventTitle>{event.title}</EventTitle>
+                  <EventText>{event.text}</EventText>
+                  <EventActions>
+                    <EditButton onClick={() => handleOpenModal('edit', event)}>Editar</EditButton>
+                    <DeleteButton onClick={() => handleDelete(event.id)}>Excluir</DeleteButton>
+                  </EventActions>
+                </EventInfo>
+              </EventCard>
+            ))
+          ) : (
+            <EmptyState>
+              <h3>Nenhum evento cadastrado</h3>
+              <p>Adicione eventos para contar a história do casal.</p>
+              <ActionButton onClick={() => handleOpenModal('add')}>Adicionar Primeiro Evento</ActionButton>
+            </EmptyState>
+          )}
+        </EventsContainer>
         
-        <StoryList>
-          <StoryTable>
-            <thead>
-              <tr>
-                <th>Imagem</th>
-                <th>Data</th>
-                <th>Título</th>
-                <th>História</th>
-                <th>Ordem</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {storyEvents.length > 0 ? (
-                storyEvents.map(event => (
-                  <tr key={event.id}>
-                    <td>
-                      <StoryImageWithFallback src={event.image} alt={event.title} />
-                    </td>
-                    <td>{event.date}</td>
-                    <td>{event.title}</td>
-                    <td>{event.text.length > 50 ? `${event.text.substring(0, 50)}...` : event.text}</td>
-                    <td>{event.order}</td>
-                    <td>
-                      <ActionButtons>
-                        <EditButton onClick={() => handleOpenModal(event)}>
-                          <FaEdit />
-                        </EditButton>
-                        <DeleteButton onClick={() => handleOpenConfirmModal(event)}>
-                          <FaTrash />
-                        </DeleteButton>
-                      </ActionButtons>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="6" style={{ textAlign: 'center' }}>
-                    Nenhum evento cadastrado. Clique em "Adicionar Evento" para começar.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </StoryTable>
-        </StoryList>
-        
-        {/* Modal de Adicionar/Editar Evento */}
-        {isModalOpen && (
-          <Modal>
-            <ModalContent>
-              <ModalHeader>
-                <h3>{isEditing ? 'Editar Evento' : 'Adicionar Evento'}</h3>
-                <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
-              </ModalHeader>
-              
-              {success && <SuccessMessage>{success}</SuccessMessage>}
-              {error && <ErrorMessage>{error}</ErrorMessage>}
-              
+        <Modal show={showModal} onClick={handleCloseModal}>
+          <ModalContent onClick={e => e.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>{modalMode === 'add' ? 'Adicionar Evento' : 'Editar Evento'}</ModalTitle>
+              <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
+            </ModalHeader>
+            
+            {success && <SuccessMessage>{success}</SuccessMessage>}
+            {error && <ErrorMessage>{error}</ErrorMessage>}
+            
+            <form onSubmit={handleSubmit}>
               <FormGroup>
-                <Label htmlFor="date">
-                  <FaCalendarAlt /> Data
-                </Label>
+                <Label htmlFor="date">Data *</Label>
                 <Input
                   type="text"
                   id="date"
                   name="date"
                   value={currentEvent.date}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   placeholder="Ex: Janeiro de 2020"
+                  required
                 />
               </FormGroup>
               
               <FormGroup>
-                <Label htmlFor="title">
-                  <FaHeading /> Título
-                </Label>
+                <Label htmlFor="title">Título *</Label>
                 <Input
                   type="text"
                   id="title"
                   name="title"
                   value={currentEvent.title}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   placeholder="Ex: Primeiro Encontro"
+                  required
                 />
               </FormGroup>
               
               <FormGroup>
-                <Label htmlFor="text">
-                  <FaAlignLeft /> História
-                </Label>
+                <Label htmlFor="text">História *</Label>
                 <TextArea
                   id="text"
                   name="text"
                   value={currentEvent.text}
-                  onChange={handleInputChange}
-                  placeholder="Descreva o evento..."
+                  onChange={handleChange}
+                  placeholder="Conte a história deste evento..."
+                  required
                 />
               </FormGroup>
               
               <FormGroup>
-                <Label htmlFor="order">
-                  <FaSortAmountDown /> Ordem
-                </Label>
+                <Label htmlFor="order">Ordem</Label>
                 <Input
                   type="number"
                   id="order"
                   name="order"
                   value={currentEvent.order}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   min="0"
                 />
               </FormGroup>
               
               <FormGroup>
-                <Label>
-                  <FaImage /> Imagem
-                </Label>
-                <ImageUploadContainer>
-                  <ImagePreviewWithFallback
-                    src={currentEvent.image}
-                    alt={currentEvent.title}
-                    onClick={() => document.getElementById('image-upload').click()}
-                  />
-                  <FileInput
-                    type="file"
-                    id="image-upload"
-                    accept="image/*"
-                    onChange={handleImageSelect}
-                  />
-                </ImageUploadContainer>
+                <Label>Imagem</Label>
+                <ImagePreview onClick={handleImageClick}>
+                  {imagePreview ? (
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      onError={() => {
+                        setImagePreview('');
+                        setError('Erro ao carregar imagem. Tente novamente.');
+                      }}
+                    />
+                  ) : (
+                    <span>Clique para selecionar uma imagem</span>
+                  )}
+                </ImagePreview>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+                <ImageUploadButton type="button" onClick={handleImageClick}>
+                  Selecionar Imagem
+                </ImageUploadButton>
               </FormGroup>
               
-              <ModalFooter>
-                <CancelButton onClick={handleCloseModal}>Cancelar</CancelButton>
-                <SaveButton onClick={handleSave} disabled={isLoading}>
-                  {isLoading ? 'Salvando...' : 'Salvar'}
-                </SaveButton>
-              </ModalFooter>
-            </ModalContent>
-          </Modal>
-        )}
-        
-        {/* Modal de Confirmação de Exclusão */}
-        {isConfirmModalOpen && (
-          <ConfirmModal>
-            <ConfirmContent>
-              <ConfirmTitle>Confirmar Exclusão</ConfirmTitle>
-              <ConfirmText>
-                Tem certeza que deseja excluir o evento "{eventToDelete?.title}"?
-                Esta ação não pode ser desfeita.
-              </ConfirmText>
-              <ConfirmButtons>
-                <CancelButton onClick={handleCloseConfirmModal}>Cancelar</CancelButton>
-                <DeleteButton onClick={handleDelete} disabled={isLoading}>
-                  {isLoading ? 'Excluindo...' : 'Excluir'}
-                </DeleteButton>
-              </ConfirmButtons>
-            </ConfirmContent>
-          </ConfirmModal>
-        )}
+              <SubmitButton type="submit" disabled={isLoading}>
+                {isLoading ? 'Salvando...' : 'Salvar'}
+              </SubmitButton>
+            </form>
+          </ModalContent>
+        </Modal>
       </Content>
-    </StoryContainer>
+    </AdminContainer>
   );
 };
 
-export default NossaHistoria;
+export default Historia;
