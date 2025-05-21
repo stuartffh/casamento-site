@@ -5,7 +5,7 @@ import axios from 'axios';
 const PageContainer = styled.div`
   width: 100vw;
   max-width: 100%;
-  margin-top: calc(12 * var(--header-height));
+  padding-top: var(--header-height);
 `;
 
 const PageContent = styled.div`

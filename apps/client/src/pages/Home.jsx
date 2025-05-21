@@ -7,11 +7,11 @@ const HomeContainer = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  margin-top: calc(2 * var(--header-height));
 `;
 
 const HeroSection = styled.section`
-  height: 100vh;
+  height: calc(100vh - var(--header-height));
+  margin-top: var(--header-height);
   width: 100vw;
   background-image: url('/images/couple-background.png');
   background-size: cover;
@@ -22,10 +22,10 @@ const HeroSection = styled.section`
   position: relative;
   text-align: center;
   color: var(--white);
-  margin: 0;
   padding: 0;
   overflow: hidden;
 `;
+
 
 const HeroOverlay = styled.div`
   position: absolute;

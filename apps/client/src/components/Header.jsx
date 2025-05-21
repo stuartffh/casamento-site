@@ -8,11 +8,13 @@ const HeaderContainer = styled.header`
   left: 0;
   width: 100%;
   z-index: 100;
-  padding: 20px 0;
   background-color: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(5px);
   border-bottom: 1px solid rgba(182, 149, 192, 0.2);
-  height: var(--header-height);
+  min-height: var(--header-height); 
+  padding: 0 20px; 
+  display: flex;
+  align-items: center;
 `;
 
 const HeaderInner = styled.div`
