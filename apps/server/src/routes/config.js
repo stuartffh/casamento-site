@@ -46,24 +46,56 @@ const upload = multer({
   }
 });
 
+// Função auxiliar para garantir que exista apenas um registro de configuração
+async function ensureSingleConfig() {
+  // Contar quantos registros existem
+  const count = await prisma.config.count();
+  
+  // Se não existir nenhum, criar um padrão
+  if (count === 0) {
+    return await prisma.config.create({
+      data: {
+        siteTitle: 'Marília & Iago',
+        weddingDate: '',
+        pixKey: '',
+        pixDescription: '',
+        mercadoPagoToken: '',
+        pixQrCodeImage: ''
+      }
+    });
+  }
+  
+  // Se existir mais de um, manter apenas o primeiro e excluir os demais
+  if (count > 1) {
+    // Buscar todos os registros ordenados por ID
+    const configs = await prisma.config.findMany({
+      orderBy: { id: 'asc' }
+    });
+    
+    // Manter o primeiro e excluir os demais
+    const primaryConfig = configs[0];
+    const idsToDelete = configs.slice(1).map(c => c.id);
+    
+    if (idsToDelete.length > 0) {
+      await prisma.config.deleteMany({
+        where: { id: { in: idsToDelete } }
+      });
+      
+      console.log(`Removidos ${idsToDelete.length} registros de configuração duplicados.`);
+    }
+    
+    return primaryConfig;
+  }
+  
+  // Se existir exatamente um, retorná-lo
+  return await prisma.config.findFirst();
+}
+
 // Obter configurações (público)
 router.get('/', async (req, res) => {
   try {
-    let config = await prisma.config.findFirst();
-    
-    if (!config) {
-      // Criar configuração padrão se não existir
-      config = await prisma.config.create({
-        data: {
-          siteTitle: 'Marília & Iago',
-          weddingDate: '',
-          pixKey: '',
-          pixDescription: '',
-          mercadoPagoToken: '',
-          pixQrCodeImage: ''
-        }
-      });
-    }
+    // Garantir que exista apenas um registro de configuração
+    const config = await ensureSingleConfig();
     
     // Remover token do Mercado Pago para requisições públicas
     if (!req.user) {
@@ -102,32 +134,21 @@ router.put('/', authenticateJWT, async (req, res) => {
   try {
     const { siteTitle, weddingDate, pixKey, pixDescription, mercadoPagoToken, pixQrCodeImage } = req.body;
     
-    let config = await prisma.config.findFirst();
+    // Garantir que exista apenas um registro de configuração
+    const existingConfig = await ensureSingleConfig();
     
-    if (config) {
-      config = await prisma.config.update({
-        where: { id: config.id },
-        data: {
-          siteTitle,
-          weddingDate,
-          pixKey,
-          pixDescription,
-          mercadoPagoToken,
-          pixQrCodeImage
-        }
-      });
-    } else {
-      config = await prisma.config.create({
-        data: {
-          siteTitle: siteTitle || 'Marília & Iago',
-          weddingDate: weddingDate || '',
-          pixKey: pixKey || '',
-          pixDescription: pixDescription || '',
-          mercadoPagoToken: mercadoPagoToken || '',
-          pixQrCodeImage: pixQrCodeImage || ''
-        }
-      });
-    }
+    // Atualizar o registro existente
+    const config = await prisma.config.update({
+      where: { id: existingConfig.id },
+      data: {
+        siteTitle: siteTitle || existingConfig.siteTitle,
+        weddingDate: weddingDate || existingConfig.weddingDate,
+        pixKey: pixKey || existingConfig.pixKey,
+        pixDescription: pixDescription || existingConfig.pixDescription,
+        mercadoPagoToken: mercadoPagoToken || existingConfig.mercadoPagoToken,
+        pixQrCodeImage: pixQrCodeImage || existingConfig.pixQrCodeImage
+      }
+    });
     
     res.json(config);
   } catch (error) {

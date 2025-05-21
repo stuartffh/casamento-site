@@ -285,7 +285,7 @@ const Config = () => {
                 name="siteTitle"
                 value={config.siteTitle}
                 onChange={handleChange}
-                placeholder="Ex: Casamento Marília & Iago"
+                placeholder="Ex: Casamento Noiva & Noivo"
               />
             </FormGroup>
             

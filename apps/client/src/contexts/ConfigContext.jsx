@@ -10,7 +10,7 @@ export const useConfig = () => useContext(ConfigContext);
 // Provedor do contexto
 export const ConfigProvider = ({ children }) => {
   const [config, setConfig] = useState({
-    siteTitle: 'Marília & Iago', // Valor padrão
+    siteTitle: 'Noiva & Noivo', // Valor padrão
     weddingDate: '',
     pixKey: '',
     pixDescription: '',
@@ -29,7 +29,7 @@ export const ConfigProvider = ({ children }) => {
       
       if (response.data) {
         setConfig({
-          siteTitle: response.data.siteTitle || 'Marília & Iago',
+          siteTitle: response.data.siteTitle || 'Noiva & Noivo',
           weddingDate: response.data.weddingDate || '',
           pixKey: response.data.pixKey || '',
           pixDescription: response.data.pixDescription || '',
