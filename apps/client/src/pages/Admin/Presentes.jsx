@@ -124,7 +124,7 @@ const PresenteImageWithFallback = ({ src, alt }) => {
   
   return (
     <PresenteImage 
-      src={src} 
+      src={`http://localhost:3001${src}`}
       alt={alt}
       onError={() => setHasError(true)}
     />

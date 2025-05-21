@@ -332,7 +332,7 @@ const Config = () => {
               <ImagePreview onClick={handleQrCodeClick}>
                 {qrCodePreview ? (
                   <img 
-                    src={qrCodePreview} 
+                    src={`http://localhost:3001${qrCodePreview}`}
                     alt="QR Code PIX" 
                     onError={() => {
                       setQrCodePreview('');

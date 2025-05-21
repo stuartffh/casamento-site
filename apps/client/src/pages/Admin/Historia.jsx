@@ -469,7 +469,7 @@ const Historia = () => {
                 {event.image ? (
                   <EventImage>
                     <img 
-                      src={event.image} 
+                      src={`http://localhost:3001${event.image}`}
                       alt={event.title}
                       onError={(e) => {
                         e.target.style.display = 'none';

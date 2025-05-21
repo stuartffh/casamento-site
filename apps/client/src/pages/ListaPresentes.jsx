@@ -238,7 +238,7 @@ const ListaPresentes = () => {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
   const [pixInfo, setPixInfo] = React.useState({
-    key: 'marilia.iago@casamento.com',
+    key: 'exemplo.pix@casamento.com',
     description: 'Presente de Casamento',
     qrCodeImage: ''
   });
@@ -263,7 +263,7 @@ const ListaPresentes = () => {
       const response = await axios.get('http://localhost:3001/api/config');
       if (response.data) {
         setPixInfo({
-          key: response.data.pixKey || 'marilia.iago@casamento.com',
+          key: response.data.pixKey || 'exemplo.pix@casamento.com',
           description: response.data.pixDescription || 'Presente de Casamento',
           qrCodeImage: response.data.pixQrCodeImage || ''
         });
@@ -317,7 +317,7 @@ const ListaPresentes = () => {
     
     return (
       <GiftImage 
-        src={src} 
+        src={`http://localhost:3001${src}`}
         alt={alt}
         onError={() => {
           // Em vez de tentar carregar outra imagem, apenas marcamos que houve erro
