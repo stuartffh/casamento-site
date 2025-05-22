@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
+import { useConfig } from '../../contexts/ConfigContext';
 import {
   AdminContainer,
   Sidebar,
@@ -13,25 +14,13 @@ import {
   PageTitle,
   ActionButton,
   SecondaryButton,
-  FormGroup,
-  Label,
-  Input,
-  Select,
   Table,
   Th,
   Td,
   Tr,
   SuccessMessage,
-  ErrorMessage,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalTitle,
-  CloseButton,
-  EditButton,
-  DeleteButton
+  ErrorMessage
 } from '../../styles/AdminStyles';
-
 
 const StatsContainer = styled.div`
   display: grid;
@@ -106,14 +95,6 @@ const LoadingContainer = styled.div`
   color: var(--accent);
 `;
 
-const ErrorContainer = styled.div`
-  background-color: #f8d7da;
-  color: #721c24;
-  padding: 15px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-`;
-
 const NoDataContainer = styled.div`
   text-align: center;
   padding: 40px 0;
@@ -151,6 +132,30 @@ const Pagination = styled.div`
   }
 `;
 
+const StatusBadge = styled.span`
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: center;
+  
+  &.paid {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  
+  &.pending {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+  
+  &.cancelled {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+`;
+
 const AdminVendas = () => {
   const [sales, setSales] = useState([]);
   const [stats, setStats] = useState({
@@ -165,6 +170,13 @@ const AdminVendas = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const { config } = useConfig();
+  
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/admin/login';
+  };
   
   const fetchSales = useCallback(async () => {
     try {
@@ -297,8 +309,48 @@ const AdminVendas = () => {
   if (loading) {
     return (
       <AdminContainer>
-        <PageTitle>Vendas</PageTitle>
-        <LoadingContainer>Carregando vendas...</LoadingContainer>
+        <Sidebar>
+          <Logo>
+            <h1>
+              {config?.siteTitle || 'Marília & Iago'}
+            </h1>
+          </Logo>
+          
+          <NavMenu>
+            <NavItem>
+              <NavLink to="/admin">Dashboard</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink to="/admin/presentes">Presentes</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink to="/admin/vendas" className="active">Vendas</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink to="/admin/config">Configurações</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink to="/admin/conteudo">Conteúdo</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink to="/admin/historia">Nossa História</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink to="/admin/album">Álbum</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink to="/admin/rsvp">RSVPs</NavLink>
+            </NavItem>
+          </NavMenu>
+        </Sidebar>
+        
+        <Content>
+          <Header>
+            <PageTitle>Vendas</PageTitle>
+            <SecondaryButton onClick={handleLogout}>Sair</SecondaryButton>
+          </Header>
+          <LoadingContainer>Carregando vendas...</LoadingContainer>
+        </Content>
       </AdminContainer>
     );
   }
@@ -306,95 +358,177 @@ const AdminVendas = () => {
   if (error) {
     return (
       <AdminContainer>
-        <PageTitle>Vendas</PageTitle>
-        <ErrorContainer>{error}</ErrorContainer>
+        <Sidebar>
+          <Logo>
+            <h1>
+              {config?.siteTitle || 'Marília & Iago'}
+            </h1>
+          </Logo>
+          
+          <NavMenu>
+            <NavItem>
+              <NavLink to="/admin">Dashboard</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink to="/admin/presentes">Presentes</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink to="/admin/vendas" className="active">Vendas</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink to="/admin/config">Configurações</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink to="/admin/conteudo">Conteúdo</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink to="/admin/historia">Nossa História</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink to="/admin/album">Álbum</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink to="/admin/rsvp">RSVPs</NavLink>
+            </NavItem>
+          </NavMenu>
+        </Sidebar>
+        
+        <Content>
+          <Header>
+            <PageTitle>Vendas</PageTitle>
+            <SecondaryButton onClick={handleLogout}>Sair</SecondaryButton>
+          </Header>
+          <ErrorMessage>{error}</ErrorMessage>
+        </Content>
       </AdminContainer>
     );
   }
   
   return (
     <AdminContainer>
-      <StatsContainer>
-        <StatCard>
-          <h3>Total de Vendas</h3>
-          <p>{stats.totalSales}</p>
-        </StatCard>
-        <StatCard>
-          <h3>Valor Total</h3>
-          <p>{formatCurrency(stats.totalAmount)}</p>
-        </StatCard>
-        {stats.salesByMethod.map((method) => (
-          <StatCard key={method.paymentMethod}>
-            <h3>Vendas via {getPaymentMethodLabel(method.paymentMethod)}</h3>
-            <p>{method._count.id}</p>
-          </StatCard>
-        ))}
-      </StatsContainer>
-      
-      <FilterContainer>
-        <SearchInput 
-          type="text" 
-          placeholder="Buscar por nome, email ou presente..." 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      <Sidebar>
+        <Logo>
+          <h1>
+            {config?.siteTitle || 'Marília & Iago'}
+          </h1>
+        </Logo>
         
-        <FilterSelect 
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="all">Todos os status</option>
-          <option value="paid">Pagos</option>
-          <option value="pending">Pendentes</option>
-          <option value="cancelled">Cancelados</option>
-        </FilterSelect>
-      </FilterContainer>
+        <NavMenu>
+          <NavItem>
+            <NavLink to="/admin">Dashboard</NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink to="/admin/presentes">Presentes</NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink to="/admin/vendas" className="active">Vendas</NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink to="/admin/config">Configurações</NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink to="/admin/conteudo">Conteúdo</NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink to="/admin/historia">Nossa História</NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink to="/admin/album">Álbum</NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink to="/admin/rsvp">RSVPs</NavLink>
+          </NavItem>
+        </NavMenu>
+      </Sidebar>
       
-      <TableContainer>
-        <Table>
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Cliente</th>
-              <th>Presente</th>
-              <th>Valor</th>
-              <th>Método</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.length > 0 ? (
-              currentItems.map((sale) => (
-                <tr key={sale.id}>
-                  <td>{formatDate(sale.createdAt)}</td>
-                  <td>
-                    {sale.customerName}
-                    {sale.customerEmail && <div><small>{sale.customerEmail}</small></div>}
-                  </td>
-                  <td>{sale.present ? sale.present.name : 'Produto não encontrado'}</td>
-                  <td>{formatCurrency(sale.amount)}</td>
-                  <td>{getPaymentMethodLabel(sale.paymentMethod)}</td>
-                  <td>
-                    <span className={`status ${sale.status}`}>
-                      {getStatusLabel(sale.status)}
-                    </span>
-                  </td>
-                </tr>
-              ))
-            ) : (
+      <Content>
+        <Header>
+          <PageTitle>Vendas</PageTitle>
+          <SecondaryButton onClick={handleLogout}>Sair</SecondaryButton>
+        </Header>
+        
+        <StatsContainer>
+          <StatCard>
+            <h3>Total de Vendas</h3>
+            <p>{stats.totalSales}</p>
+          </StatCard>
+          <StatCard>
+            <h3>Valor Total</h3>
+            <p>{formatCurrency(stats.totalAmount)}</p>
+          </StatCard>
+          {stats.salesByMethod && stats.salesByMethod.map((method) => (
+            <StatCard key={method.paymentMethod}>
+              <h3>Vendas via {getPaymentMethodLabel(method.paymentMethod)}</h3>
+              <p>{method._count.id}</p>
+            </StatCard>
+          ))}
+        </StatsContainer>
+        
+        <FilterContainer>
+          <SearchInput 
+            type="text" 
+            placeholder="Buscar por nome, email ou presente..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          
+          <FilterSelect 
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">Todos os status</option>
+            <option value="paid">Pagos</option>
+            <option value="pending">Pendentes</option>
+            <option value="cancelled">Cancelados</option>
+          </FilterSelect>
+        </FilterContainer>
+        
+        <TableContainer>
+          <Table>
+            <thead>
               <tr>
-                <td colSpan="6">
-                  <NoDataContainer>
-                    Nenhuma venda encontrada com os filtros atuais.
-                  </NoDataContainer>
-                </td>
+                <Th>Data</Th>
+                <Th>Cliente</Th>
+                <Th>Presente</Th>
+                <Th>Valor</Th>
+                <Th>Método</Th>
+                <Th>Status</Th>
               </tr>
-            )}
-          </tbody>
-        </Table>
-      </TableContainer>
-      
-      {renderPagination()}
+            </thead>
+            <tbody>
+              {currentItems.length > 0 ? (
+                currentItems.map((sale) => (
+                  <Tr key={sale.id}>
+                    <Td>{formatDate(sale.createdAt)}</Td>
+                    <Td>
+                      {sale.customerName}
+                      {sale.customerEmail && <div><small>{sale.customerEmail}</small></div>}
+                    </Td>
+                    <Td>{sale.present ? sale.present.name : 'Produto não encontrado'}</Td>
+                    <Td>{formatCurrency(sale.amount)}</Td>
+                    <Td>{getPaymentMethodLabel(sale.paymentMethod)}</Td>
+                    <Td>
+                      <StatusBadge className={sale.status}>
+                        {getStatusLabel(sale.status)}
+                      </StatusBadge>
+                    </Td>
+                  </Tr>
+                ))
+              ) : (
+                <Tr>
+                  <Td colSpan="6">
+                    <NoDataContainer>
+                      Nenhuma venda encontrada com os filtros atuais.
+                    </NoDataContainer>
+                  </Td>
+                </Tr>
+              )}
+            </tbody>
+          </Table>
+        </TableContainer>
+        
+        {renderPagination()}
+      </Content>
     </AdminContainer>
   );
 };
