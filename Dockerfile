@@ -35,9 +35,6 @@ COPY apps/server ./apps/server
 # Copiar build do client gerado na etapa anterior
 COPY --from=client-build /app/apps/client/dist ./apps/server/public/build
 
-# Copiar banco de dados SQLite
-#COPY database.sqlite ./apps/server/
-
 # Instalar somente as dependências de produção do server
 WORKDIR /app/apps/server
 RUN pnpm install --prod
