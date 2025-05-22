@@ -78,10 +78,9 @@ router.post('/create-preference', async (req, res) => {
     });
 
     const protocol = req.protocol || 'https';
-    const host = req.get('host') || 'localhost:3000'; // Substitua por seu domínio real, se desejar
+    const host = req.get('host') || 'localhost:3000'; 
     const baseUrl = `${protocol}://${host}`;
 
-    // Criar preferência
     const preference = {
       items: [
         {
@@ -99,9 +98,9 @@ router.post('/create-preference', async (req, res) => {
       },
       external_reference: `order-${order.id}`,
       back_urls: {
-        success: `https://google.com`,
-        failure: `${baseUrl}/presentes/confirmacao?status=failure&order_id=${order.id}`,
-        pending: `${baseUrl}/presentes/confirmacao?status=pending&order_id=${order.id}`
+        success: `${baseUrl}/presentes/confirmacao/${order.id}`,
+        failure: `${baseUrl}/presentes/confirmacao/${order.id}`,
+        pending: `${baseUrl}/presentes/confirmacao/${order.id}`,
       },
       auto_return: 'approved',
       notification_url: notificationUrl || `${baseUrl}/api/mercadopago/webhook`,
