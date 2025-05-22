@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 
@@ -145,6 +145,11 @@ const GiftButton = styled.button`
   &:hover {
     background-color: var(--accent);
   }
+  
+  &:disabled {
+    background-color: rgba(182, 149, 192, 0.5);
+    cursor: not-allowed;
+  }
 `;
 
 const PixContainer = styled.div`
@@ -232,19 +237,117 @@ const ErrorContainer = styled.div`
   max-width: 800px;
 `;
 
+const Modal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background-color: var(--white);
+  border-radius: 5px;
+  padding: 30px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: var(--shadow-lg);
+  
+  h3 {
+    margin-bottom: 20px;
+    color: var(--primary);
+    text-align: center;
+  }
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: 20px;
+  
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  
+  input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+    
+    &:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  
+  button {
+    padding: 12px 20px;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    
+    &:first-child {
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text);
+      
+      &:hover {
+        background-color: #f0f0f0;
+      }
+    }
+    
+    &:last-child {
+      background-color: var(--primary);
+      border: none;
+      color: var(--white);
+      
+      &:hover {
+        background-color: var(--accent);
+      }
+      
+      &:disabled {
+        background-color: rgba(182, 149, 192, 0.5);
+        cursor: not-allowed;
+      }
+    }
+  }
+`;
+
 const ListaPresentes = () => {
-  const [activeTab, setActiveTab] = React.useState('online');
-  const [gifts, setGifts] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState('');
-  const [pixInfo, setPixInfo] = React.useState({
+  const [activeTab, setActiveTab] = useState('online');
+  const [gifts, setGifts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [pixInfo, setPixInfo] = useState({
     key: 'exemplo.pix@casamento.com',
     description: 'Presente de Casamento',
     qrCodeImage: ''
   });
   
+  // Estados para o modal de checkout
+  const [showModal, setShowModal] = useState(false);
+  const [selectedGift, setSelectedGift] = useState(null);
+  const [customerName, setCustomerName] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
+  
   // Usando useCallback para evitar recriação das funções a cada render
-  const fetchPresentes = React.useCallback(async () => {
+  const fetchPresentes = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get('http://localhost:3001/api/presentes');
@@ -258,7 +361,7 @@ const ListaPresentes = () => {
     }
   }, []);
   
-  const fetchPixInfo = React.useCallback(async () => {
+  const fetchPixInfo = useCallback(async () => {
     try {
       const response = await axios.get('http://localhost:3001/api/config');
       if (response.data) {
@@ -275,7 +378,7 @@ const ListaPresentes = () => {
   }, []);
   
   // useEffect com dependências explícitas
-  React.useEffect(() => {
+  useEffect(() => {
     // Usando uma flag para garantir que as chamadas só aconteçam uma vez
     let isMounted = true;
     
@@ -302,22 +405,66 @@ const ListaPresentes = () => {
   };
   
   const handlePresentear = (gift) => {
-    // Implementação futura: integração com checkout
-    alert(`Você selecionou o presente: ${gift.name}`);
+    setSelectedGift(gift);
+    setShowModal(true);
+    setCheckoutError('');
+  };
+  
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedGift(null);
+    setCustomerName('');
+    setCustomerEmail('');
+    setCheckoutError('');
+  };
+  
+  const handleCheckout = async () => {
+    if (!customerName) {
+      setCheckoutError('Por favor, informe seu nome.');
+      return;
+    }
+    
+    if (customerEmail && !/\S+@\S+\.\S+/.test(customerEmail)) {
+      setCheckoutError('Por favor, informe um e-mail válido.');
+      return;
+    }
+    
+    try {
+      setProcessingPayment(true);
+      setCheckoutError('');
+      
+      // Criar preferência de pagamento no Mercado Pago
+      const response = await axios.post('http://localhost:3001/api/mercadopago/create-preference', {
+        presentId: selectedGift.id,
+        customerName,
+        customerEmail
+      });
+      
+      // Redirecionar para a página de checkout do Mercado Pago
+      if (response.data && response.data.init_point) {
+        window.location.href = response.data.init_point;
+      } else {
+        throw new Error('Não foi possível iniciar o checkout.');
+      }
+    } catch (error) {
+      console.error('Erro ao processar pagamento:', error);
+      setCheckoutError('Ocorreu um erro ao processar o pagamento. Por favor, tente novamente.');
+      setProcessingPayment(false);
+    }
   };
   
   // Componente de imagem com tratamento de erro melhorado
   const GiftImageWithFallback = ({ src, alt }) => {
-    const [hasError, setHasError] = React.useState(false);
+    const [hasError, setHasError] = useState(false);
     
     // Se já sabemos que a imagem não existe, renderizamos o fallback diretamente
-    if (hasError) {
+    if (!src || hasError) {
       return <GiftImageFallback>{alt || 'Imagem não disponível'}</GiftImageFallback>;
     }
     
     return (
       <GiftImage 
-        src={`http://localhost:3001${src}`}
+        src={src.startsWith('http') ? src : `http://localhost:3001${src}`}
         alt={alt}
         onError={() => {
           // Em vez de tentar carregar outra imagem, apenas marcamos que houve erro
@@ -329,7 +476,7 @@ const ListaPresentes = () => {
   
   // Componente para QR Code com tratamento de erro
   const QRCodeWithFallback = ({ src, alt }) => {
-    const [hasError, setHasError] = React.useState(false);
+    const [hasError, setHasError] = useState(false);
     
     if (!src || hasError) {
       return <PixQRCodeFallback>QR Code não disponível</PixQRCodeFallback>;
@@ -338,7 +485,7 @@ const ListaPresentes = () => {
     return (
       <PixQRCode>
         <img 
-          src={`http://localhost:3001${src}`} 
+          src={src.startsWith('http') ? src : `http://localhost:3001${src}`} 
           alt={alt || 'QR Code PIX'} 
           onError={() => setHasError(true)}
         />
@@ -421,6 +568,53 @@ const ListaPresentes = () => {
         </GiftTabs>
         
         {renderContent()}
+        
+        {showModal && selectedGift && (
+          <Modal>
+            <ModalContent>
+              <h3>Finalizar Compra</h3>
+              
+              <p>Você está presenteando: <strong>{selectedGift.name}</strong></p>
+              <p>Valor: <strong>{formatPrice(selectedGift.price)}</strong></p>
+              
+              <FormGroup>
+                <label htmlFor="customerName">Seu Nome *</label>
+                <input
+                  type="text"
+                  id="customerName"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Digite seu nome completo"
+                  required
+                />
+              </FormGroup>
+              
+              <FormGroup>
+                <label htmlFor="customerEmail">Seu E-mail (opcional)</label>
+                <input
+                  type="email"
+                  id="customerEmail"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  placeholder="Digite seu e-mail"
+                />
+              </FormGroup>
+              
+              {checkoutError && <ErrorContainer>{checkoutError}</ErrorContainer>}
+              
+              <ButtonGroup>
+                <button type="button" onClick={closeModal}>Cancelar</button>
+                <button 
+                  type="button" 
+                  onClick={handleCheckout}
+                  disabled={processingPayment}
+                >
+                  {processingPayment ? 'Processando...' : 'Pagar com Mercado Pago'}
+                </button>
+              </ButtonGroup>
+            </ModalContent>
+          </Modal>
+        )}
       </PageContent>
     </PageContainer>
   );

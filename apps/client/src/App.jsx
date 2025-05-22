@@ -6,6 +6,7 @@ import './styles/GlobalStyles.css';
 import Home from './pages/Home';
 import NossaHistoria from './pages/NossaHistoria';
 import ListaPresentes from './pages/ListaPresentes';
+import ConfirmacaoPresente from './pages/ConfirmacaoPresente';
 import ConfirmePresenca from './pages/ConfirmePresenca';
 import Informacoes from './pages/Informacoes';
 import Album from './pages/Album';
@@ -35,6 +36,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/nossa-historia" element={<NossaHistoria />} />
           <Route path="/lista-de-presentes" element={<ListaPresentes />} />
+          <Route path="/presentes/confirmacao" element={<ConfirmacaoPresente />} />
           <Route path="/confirme-sua-presenca" element={<ConfirmePresenca />} />
           <Route path="/informacoes" element={<Informacoes />} />
           <Route path="/album" element={<Album />} />

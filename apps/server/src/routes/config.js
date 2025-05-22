@@ -59,7 +59,10 @@ async function ensureSingleConfig() {
         weddingDate: '',
         pixKey: '',
         pixDescription: '',
-        mercadoPagoToken: '',
+        mercadoPagoPublicKey: '',
+        mercadoPagoAccessToken: '',
+        mercadoPagoWebhookUrl: '',
+        mercadoPagoNotificationUrl: '',
         pixQrCodeImage: ''
       }
     });
@@ -115,9 +118,9 @@ router.get('/', async (req, res) => {
     // Garantir que exista apenas um registro de configuração
     const config = await ensureSingleConfig();
     
-    // Remover token do Mercado Pago para requisições públicas
+    // Remover tokens sensíveis para requisições públicas
     if (!req.user) {
-      config.mercadoPagoToken = undefined;
+      config.mercadoPagoAccessToken = undefined;
     }
     
     res.json(config);
@@ -169,7 +172,17 @@ router.post('/upload-qrcode', authenticateJWT, upload.single('qrcode'), async (r
 // Atualizar configurações (protegido)
 router.put('/', authenticateJWT, async (req, res) => {
   try {
-    const { siteTitle, weddingDate, pixKey, pixDescription, mercadoPagoToken, pixQrCodeImage } = req.body;
+    const { 
+      siteTitle, 
+      weddingDate, 
+      pixKey, 
+      pixDescription, 
+      mercadoPagoPublicKey,
+      mercadoPagoAccessToken,
+      mercadoPagoWebhookUrl,
+      mercadoPagoNotificationUrl,
+      pixQrCodeImage 
+    } = req.body;
     
     // Garantir que exista apenas um registro de configuração
     const existingConfig = await ensureSingleConfig();
@@ -187,14 +200,37 @@ router.put('/', authenticateJWT, async (req, res) => {
         weddingDate: weddingDate || existingConfig.weddingDate,
         pixKey: pixKey || existingConfig.pixKey,
         pixDescription: pixDescription || existingConfig.pixDescription,
-        mercadoPagoToken: mercadoPagoToken || existingConfig.mercadoPagoToken,
+        mercadoPagoPublicKey: mercadoPagoPublicKey || existingConfig.mercadoPagoPublicKey,
+        mercadoPagoAccessToken: mercadoPagoAccessToken || existingConfig.mercadoPagoAccessToken,
+        mercadoPagoWebhookUrl: mercadoPagoWebhookUrl || existingConfig.mercadoPagoWebhookUrl,
+        mercadoPagoNotificationUrl: mercadoPagoNotificationUrl || existingConfig.mercadoPagoNotificationUrl,
         pixQrCodeImage: pixQrCodeImage || existingConfig.pixQrCodeImage
       }
     });
     
-    res.json(config);
+    // Remover tokens sensíveis da resposta
+    const safeConfig = { ...config };
+    safeConfig.mercadoPagoAccessToken = undefined;
+    
+    res.json(safeConfig);
   } catch (error) {
     console.error('Erro ao atualizar configurações:', error);
+    res.status(500).json({ message: 'Erro no servidor' });
+  }
+});
+
+// Obter chave pública do Mercado Pago (público)
+router.get('/mercadopago-public-key', async (req, res) => {
+  try {
+    const config = await ensureSingleConfig();
+    
+    if (!config.mercadoPagoPublicKey) {
+      return res.status(404).json({ message: 'Chave pública do Mercado Pago não configurada' });
+    }
+    
+    res.json({ publicKey: config.mercadoPagoPublicKey });
+  } catch (error) {
+    console.error('Erro ao buscar chave pública do Mercado Pago:', error);
     res.status(500).json({ message: 'Erro no servidor' });
   }
 });

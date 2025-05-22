@@ -245,7 +245,11 @@ const Config = () => {
           siteTitle: response.data.siteTitle || '',
           weddingDate: response.data.weddingDate || '',
           pixKey: response.data.pixKey || '',
-          pixDescription: response.data.pixDescription || ''
+          pixDescription: response.data.pixDescription || '',
+          mercadoPagoPublicKey: response.data.mercadoPagoPublicKey || '',
+          mercadoPagoAccessToken: response.data.mercadoPagoAccessToken || '',
+          mercadoPagoWebhookUrl: response.data.mercadoPagoWebhookUrl || '',
+          mercadoPagoNotificationUrl: response.data.mercadoPagoNotificationUrl || ''
         });
         
         // Verificar se há QR Code
@@ -717,6 +721,63 @@ const Config = () => {
               <ImageUploadButton type="button" onClick={handleQrCodeClick}>
                 Selecionar QR Code
               </ImageUploadButton>
+            </FormGroup>
+          </ConfigContainer>
+          
+          <ConfigContainer>
+            <ConfigTitle>Configurações do Mercado Pago</ConfigTitle>
+            <p>Configure as credenciais do Mercado Pago para habilitar a compra de presentes online.</p>
+            
+            <FormGroup>
+              <Label htmlFor="mercadoPagoPublicKey">Chave Pública (Public Key)</Label>
+              <Input
+                type="text"
+                id="mercadoPagoPublicKey"
+                name="mercadoPagoPublicKey"
+                value={config.mercadoPagoPublicKey}
+                onChange={handleChange}
+                placeholder="APP_USR-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+              />
+              <small>Encontrada no painel do Mercado Pago em Credenciais</small>
+            </FormGroup>
+            
+            <FormGroup>
+              <Label htmlFor="mercadoPagoAccessToken">Access Token</Label>
+              <Input
+                type="text"
+                id="mercadoPagoAccessToken"
+                name="mercadoPagoAccessToken"
+                value={config.mercadoPagoAccessToken}
+                onChange={handleChange}
+                placeholder="APP_USR-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+              />
+              <small>Encontrado no painel do Mercado Pago em Credenciais</small>
+            </FormGroup>
+            
+            <FormGroup>
+              <Label htmlFor="mercadoPagoWebhookUrl">URL de Webhook (opcional)</Label>
+              <Input
+                type="text"
+                id="mercadoPagoWebhookUrl"
+                name="mercadoPagoWebhookUrl"
+                value={config.mercadoPagoWebhookUrl}
+                onChange={handleChange}
+                placeholder="https://seu-site.com/api/webhooks/mercadopago"
+              />
+              <small>URL para receber notificações de pagamento via webhook</small>
+            </FormGroup>
+            
+            <FormGroup>
+              <Label htmlFor="mercadoPagoNotificationUrl">URL de Notificação (opcional)</Label>
+              <Input
+                type="text"
+                id="mercadoPagoNotificationUrl"
+                name="mercadoPagoNotificationUrl"
+                value={config.mercadoPagoNotificationUrl}
+                onChange={handleChange}
+                placeholder="https://seu-site.com/api/notifications/mercadopago"
+              />
+              <small>URL para redirecionamento após pagamento</small>
             </FormGroup>
           </ConfigContainer>
           
