@@ -462,6 +462,9 @@ const Conteudo = () => {
             <NavLink to="/admin/presentes">Presentes</NavLink>
           </NavItem>
           <NavItem>
+                      <NavLink to="/admin/vendas">Vendas</NavLink>
+                    </NavItem>
+          <NavItem>
             <NavLink to="/admin/config">Configurações</NavLink>
           </NavItem>
           <NavItem>

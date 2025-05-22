@@ -20,6 +20,7 @@ import AdminConteudo from './pages/Admin/Conteudo';
 import AdminHistoria from './pages/Admin/Historia';
 import AdminAlbum from './pages/Admin/Album';
 import AdminRSVP from './pages/Admin/RSVP';
+import AdminVendas from './pages/Admin/Vendas';
 
 // Componentes
 import Header from './components/Header';
@@ -96,6 +97,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <AdminHistoria />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/vendas" 
+            element={
+              <ProtectedRoute>
+                <AdminVendas />
               </ProtectedRoute>
             } 
           />

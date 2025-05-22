@@ -545,6 +545,9 @@ const Config = () => {
             <NavLink to="/admin/presentes">Presentes</NavLink>
           </NavItem>
           <NavItem>
+            <NavLink to="/admin/vendas">Vendas</NavLink>
+          </NavItem>
+          <NavItem>
             <NavLink to="/admin/config" className="active">Configurações</NavLink>
           </NavItem>
           <NavItem>

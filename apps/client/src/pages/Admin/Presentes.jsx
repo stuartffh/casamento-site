@@ -418,6 +418,9 @@ const Presentes = () => {
             <NavLink to="/admin/presentes" className="active">Presentes</NavLink>
           </NavItem>
           <NavItem>
+                      <NavLink to="/admin/vendas">Vendas</NavLink>
+                    </NavItem>
+          <NavItem>
             <NavLink to="/admin/config">Configurações</NavLink>
           </NavItem>
           <NavItem>

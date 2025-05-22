@@ -161,7 +161,7 @@ router.post('/webhook', async (req, res) => {
           }
         });
         
-        // Se o pagamento foi aprovado, reduzir o estoque do presente
+        // Se o pagamento foi aprovado, reduzir o estoque do presente e registrar a venda
         if (status === 'approved') {
           const order = await prisma.order.findUnique({
             where: { id: parseInt(orderId) },
@@ -169,10 +169,25 @@ router.post('/webhook', async (req, res) => {
           });
           
           if (order && order.present) {
+            // Reduzir o estoque do presente
             await prisma.present.update({
               where: { id: order.present.id },
               data: {
                 stock: Math.max(0, order.present.stock - 1)
+              }
+            });
+            
+            // Registrar a venda na nova tabela Sale
+            await prisma.sale.create({
+              data: {
+                presentId: order.present.id,
+                customerName: order.customerName,
+                customerEmail: order.customerEmail,
+                amount: order.present.price,
+                paymentMethod: 'mercadopago',
+                paymentId: payment.body.id.toString(),
+                status: 'paid',
+                notes: `Pagamento aprovado via Mercado Pago. ID do pedido: ${orderId}`
               }
             });
           }
