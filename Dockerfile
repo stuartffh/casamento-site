@@ -35,17 +35,20 @@ COPY apps/server ./apps/server
 # Copiar build do client gerado na etapa anterior
 COPY --from=client-build /app/apps/client/dist ./apps/server/public/build
 
+# ✅ Copiar banco de dados SQLite (certifique-se de que esse arquivo exista!)
+# Caso não tenha o banco ainda, comente ou remova a linha abaixo:
+COPY database.sqlite ./apps/server/
+
 # Instalar somente as dependências de produção do server
 WORKDIR /app/apps/server
 RUN pnpm install --prod
 
 # Prisma
+# Se ainda não tiver migrations criadas, você pode pular a linha de deploy
 ENV DATABASE_URL="file:./database.sqlite"
 
 RUN apk add --no-cache openssl
-
 RUN npx prisma generate && npx prisma migrate deploy
-
 
 # Variáveis de ambiente
 ENV NODE_ENV=production
