@@ -1,13 +1,37 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
-import { AdminContainer } from '../../styles/AdminStyles';
+import {
+  AdminContainer,
+  Sidebar,
+  Logo,
+  NavMenu,
+  NavItem,
+  NavLink,
+  Content,
+  Header,
+  PageTitle,
+  ActionButton,
+  SecondaryButton,
+  FormGroup,
+  Label,
+  Input,
+  Select,
+  Table,
+  Th,
+  Td,
+  Tr,
+  SuccessMessage,
+  ErrorMessage,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  CloseButton,
+  EditButton,
+  DeleteButton
+} from '../../styles/AdminStyles';
 
-const PageTitle = styled.h1`
-  font-size: 1.8rem;
-  margin-bottom: 20px;
-  color: var(--primary);
-`;
 
 const StatsContainer = styled.div`
   display: grid;
@@ -42,50 +66,6 @@ const TableContainer = styled.div`
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow-x: auto;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  
-  th, td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-  }
-  
-  th {
-    background-color: #f8f8f8;
-    color: var(--accent);
-    font-weight: 500;
-  }
-  
-  tr:hover {
-    background-color: #f5f5f5;
-  }
-  
-  .status {
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    text-align: center;
-    
-    &.paid {
-      background-color: #d4edda;
-      color: #155724;
-    }
-    
-    &.pending {
-      background-color: #fff3cd;
-      color: #856404;
-    }
-    
-    &.cancelled {
-      background-color: #f8d7da;
-      color: #721c24;
-    }
-  }
 `;
 
 const FilterContainer = styled.div`
@@ -334,8 +314,6 @@ const AdminVendas = () => {
   
   return (
     <AdminContainer>
-      <PageTitle>Vendas</PageTitle>
-      
       <StatsContainer>
         <StatCard>
           <h3>Total de Vendas</h3>
