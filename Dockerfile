@@ -37,7 +37,7 @@ COPY --from=client-build /app/apps/client/dist ./apps/server/public/build
 
 # ✅ Copiar banco de dados SQLite (certifique-se de que esse arquivo exista!)
 # Caso não tenha o banco ainda, comente ou remova a linha abaixo:
-COPY database.sqlite ./apps/server/
+COPY ./database.sqlite ./apps/server/
 
 # Instalar somente as dependências de produção do server
 WORKDIR /app/apps/server
