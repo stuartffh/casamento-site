@@ -1,6 +1,6 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
-const { MercadoPagoConfig, Preference  } = require('mercadopago');
+const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 const router = express.Router();
 const prisma = new PrismaClient();
 
@@ -24,11 +24,7 @@ async function getMercadoPagoConfig() {
 async function initMercadoPago() {
   try {
     const { accessToken } = await getMercadoPagoConfig();
-
-    const client = new MercadoPagoConfig({ accessToken });
-
-    // Você pode exportar esse `client` para uso posterior, por exemplo:
-    return client;
+    return new MercadoPagoConfig({ accessToken });
   } catch (error) {
     console.error('Erro ao inicializar Mercado Pago:', error);
     return null;
@@ -139,16 +135,19 @@ router.post('/webhook', async (req, res) => {
       const paymentId = data.id;
       
       // Inicializar o SDK do Mercado Pago
-      const initialized = await initMercadoPago();
-      if (!initialized) {
+      const mercadoPagoClient = await initMercadoPago();
+      if (!mercadoPagoClient) {
         return res.status(500).json({ message: 'Erro ao inicializar Mercado Pago' });
       }
       
-      // Buscar informações do pagamento
-      const payment = await mercadopago.payment.get(paymentId);
+      // Inicializar o cliente de pagamento
+      const paymentClient = new Payment(mercadoPagoClient);
       
-      if (payment && payment.body) {
-        const { external_reference, status } = payment.body;
+      // Buscar informações do pagamento usando o novo formato do SDK
+      const payment = await paymentClient.get({ id: paymentId });
+      
+      if (payment && payment.id) {
+        const { external_reference, status } = payment;
         
         // Extrair o ID do pedido do external_reference
         const orderId = external_reference.replace('order-', '');
@@ -185,7 +184,7 @@ router.post('/webhook', async (req, res) => {
                 customerEmail: order.customerEmail,
                 amount: order.present.price,
                 paymentMethod: 'mercadopago',
-                paymentId: payment.body.id.toString(),
+                paymentId: payment.id.toString(),
                 status: 'paid',
                 notes: `Pagamento aprovado via Mercado Pago. ID do pedido: ${orderId}`
               }
