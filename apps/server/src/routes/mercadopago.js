@@ -1,6 +1,6 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
-const mercadopago = require('mercadopago');
+const { MercadoPagoConfig, Preference  } = require('mercadopago');
 const router = express.Router();
 const prisma = new PrismaClient();
 
@@ -24,13 +24,14 @@ async function getMercadoPagoConfig() {
 async function initMercadoPago() {
   try {
     const { accessToken } = await getMercadoPagoConfig();
-    mercadopago.configure({
-      access_token: accessToken
-    });
-    return true;
+
+    const client = new MercadoPagoConfig({ accessToken });
+
+    // Você pode exportar esse `client` para uso posterior, por exemplo:
+    return client;
   } catch (error) {
     console.error('Erro ao inicializar Mercado Pago:', error);
-    return false;
+    return null;
   }
 }
 
@@ -38,39 +39,35 @@ async function initMercadoPago() {
 router.post('/create-preference', async (req, res) => {
   try {
     const { presentId, customerName, customerEmail } = req.body;
-    
+
     if (!presentId || !customerName) {
       return res.status(400).json({ message: 'ID do presente e nome do cliente são obrigatórios' });
     }
-    
-    // Inicializar o SDK do Mercado Pago
-    const initialized = await initMercadoPago();
-    if (!initialized) {
-      return res.status(500).json({ message: 'Erro ao inicializar Mercado Pago' });
-    }
-    
-    // Buscar o presente no banco de dados
+
+    // Obter configurações do Mercado Pago
+    const { accessToken, notificationUrl } = await getMercadoPagoConfig();
+
+    // Inicializar SDK com novo formato
+    const mercadoPagoClient = new MercadoPagoConfig({ accessToken });
+    const preferenceClient = new Preference(mercadoPagoClient);
+
+    // Buscar o presente
     const present = await prisma.present.findUnique({
       where: { id: parseInt(presentId) }
     });
-    
+
     if (!present) {
       return res.status(404).json({ message: 'Presente não encontrado' });
     }
-    
-    // Verificar se o presente ainda está disponível
+
     if (present.stock <= 0) {
       return res.status(400).json({ message: 'Este presente não está mais disponível' });
     }
-    
-    // Obter configurações do site
+
     const config = await prisma.config.findFirst();
     const siteTitle = config?.siteTitle || 'Casamento';
-    
-    // Obter URLs de notificação
-    const { notificationUrl, webhookUrl } = await getMercadoPagoConfig();
-    
-    // Criar um pedido no banco de dados
+
+    // Criar pedido
     const order = await prisma.order.create({
       data: {
         presentId: present.id,
@@ -79,8 +76,12 @@ router.post('/create-preference', async (req, res) => {
         status: 'pending'
       }
     });
-    
-    // Criar a preferência de pagamento no Mercado Pago
+
+    const protocol = req.protocol || 'https';
+    const host = req.get('host') || 'localhost:3000'; // Substitua por seu domínio real, se desejar
+    const baseUrl = `${protocol}://${host}`;
+
+    // Criar preferência
     const preference = {
       items: [
         {
@@ -98,29 +99,29 @@ router.post('/create-preference', async (req, res) => {
       },
       external_reference: `order-${order.id}`,
       back_urls: {
-        success: `${req.protocol}://${req.get('host')}/presentes/confirmacao?status=success&order_id=${order.id}`,
-        failure: `${req.protocol}://${req.get('host')}/presentes/confirmacao?status=failure&order_id=${order.id}`,
-        pending: `${req.protocol}://${req.get('host')}/presentes/confirmacao?status=pending&order_id=${order.id}`
+        success: `https://google.com`,
+        failure: `${baseUrl}/presentes/confirmacao?status=failure&order_id=${order.id}`,
+        pending: `${baseUrl}/presentes/confirmacao?status=pending&order_id=${order.id}`
       },
       auto_return: 'approved',
-      notification_url: notificationUrl || `${req.protocol}://${req.get('host')}/api/mercadopago/webhook`,
+      notification_url: notificationUrl || `${baseUrl}/api/mercadopago/webhook`,
       statement_descriptor: siteTitle
     };
-    
-    const response = await mercadopago.preferences.create(preference);
-    
-    // Atualizar o pedido com o ID de pagamento
+
+    const response = await preferenceClient.create({ body: preference });
+
+    // Atualizar pedido
     await prisma.order.update({
       where: { id: order.id },
       data: {
-        paymentId: response.body.id
+        paymentId: response.id
       }
     });
-    
+
     res.json({
-      id: response.body.id,
-      init_point: response.body.init_point,
-      sandbox_init_point: response.body.sandbox_init_point,
+      id: response.id,
+      init_point: response.init_point,
+      sandbox_init_point: response.sandbox_init_point,
       orderId: order.id
     });
   } catch (error) {
