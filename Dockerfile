@@ -1,119 +1,33 @@
-# Etapa 1 - Build do cliente
-
-FROM node:18-alpine AS cliente-build
+# Etapa 1 - Build do frontend (Vite)
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-
-
-# Instalar pnpm
-
-RUN npm install -g pnpm
-
-
-
-# Copiar arquivos principais do monorepo
-
+# Copiar arquivos do monorepo
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/client ./apps/client
 
-COPY apps/cliente ./apps/cliente
+# Instalar dependências e buildar o client
+RUN npm install -g pnpm && \
+    pnpm install --filter client... && \
+    cd apps/client && pnpm build
 
-COPY apps/server ./apps/server
-
-
-
-# Instalar dependências
-
-RUN pnpm install
-
-
-
-# Build do cliente
-
-WORKDIR /app/apps/cliente
-
-RUN pnpm build
-
-
-
-# Etapa 2 - Final
-
+# Etapa 2 - Rodar o backend e servir o frontend
 FROM node:18-alpine
 
 WORKDIR /app
 
-
-
-# Instalar pnpm
-
-RUN npm install -g pnpm
-
-
-
-# Instalar bash para script de inicialização
-
-RUN apk add --no-cache bash
-
-
-
-# Copiar arquivos principais
-
+# Instalar dependências necessárias
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-
-
-
-# Copiar server e build do cliente
-
 COPY apps/server ./apps/server
+COPY database.sqlite ./
 
-COPY --from=cliente-build /app/apps/cliente/dist ./apps/server/public/build
+# Copiar build do client para o public do server
+COPY --from=builder /app/apps/client/dist ./apps/server/public
 
-
-
-# Copiar banco SQLite (opcional)
-
-COPY ./database.sqlite ./apps/server/
-
-
-
-# Copiar script de inicialização
-
-COPY start.sh .
-
-
-
-# Instalar dependências de produção do server
-
-WORKDIR /app/apps/server
-
-RUN pnpm install --prod
-
-
-
-# Prisma (ajustável)
-
-ENV DATABASE_URL="file:./database.sqlite"
-
-RUN apk add --no-cache openssl
-
-RUN npx prisma generate && npx prisma migrate deploy
-
-
-
-# Variáveis de ambiente
-
-ENV NODE_ENV=production
-
-
-
-# Expor a porta
+RUN npm install -g pnpm && pnpm install --filter server...
 
 EXPOSE 3000
 
-EXPOSE 3001
-
-
-
-# Iniciar ambos (frontend e backend)
-
-CMD ["bash", "/app/start.sh"]
+# Comando para iniciar o backend (que já serve o frontend buildado)
+CMD ["pnpm", "--filter", "server", "start"]
