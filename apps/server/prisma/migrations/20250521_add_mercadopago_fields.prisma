@@ -1,5 +1,0 @@
--- AlterTable
-ALTER TABLE "Config" ADD COLUMN "mercadoPagoPublicKey" TEXT;
-ALTER TABLE "Config" ADD COLUMN "mercadoPagoAccessToken" TEXT;
-ALTER TABLE "Config" ADD COLUMN "mercadoPagoWebhookUrl" TEXT;
-ALTER TABLE "Config" ADD COLUMN "mercadoPagoNotificationUrl" TEXT;
