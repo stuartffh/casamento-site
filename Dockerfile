@@ -1,36 +1,57 @@
-# Etapa 1 - Build do frontend com Vite
-FROM node:18-alpine AS frontend-build
+# Dockerfile multi-estágio para ambiente de desenvolvimento e produção
+# Imagem base para ambos os ambientes
+FROM node:18-alpine as base
 
+# Diretório de trabalho
 WORKDIR /app
 
-# Copiar arquivos necessários
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/client ./apps/client
+# Copiar arquivos de configuração
+COPY client/package*.json ./
 
-# Instalar e buildar o client
-RUN npm install -g pnpm && \
-    pnpm install --filter client... && \
-    pnpm --filter client build
+# Instalar dependências
+RUN npm ci
 
-# Etapa 2 - Backend + servir frontend
-FROM node:18-alpine
-
+# Estágio de desenvolvimento
+FROM base as development
 WORKDIR /app
 
-# Copiar arquivos principais
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/server ./apps/server
-COPY database.sqlite ./
+# Copiar todo o código fonte
+COPY client/ ./
 
-# Copiar build do client para o public do server
-COPY --from=frontend-build /app/apps/client/dist ./apps/server/public
+# Expor porta para desenvolvimento
+EXPOSE 5173
 
-# Instalar dependências do server
-RUN npm install -g pnpm && \
-    pnpm install --filter server...
+# Comando para iniciar em modo desenvolvimento
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
-# Expor a porta que o backend usa
-EXPOSE 3001
+# Estágio de build
+FROM base as build
+WORKDIR /app
 
-# Inicia o backend que já serve o frontend
-CMD ["pnpm", "--filter", "server", "start"]
+# Copiar todo o código fonte
+COPY client/ ./
+
+# Construir a aplicação
+RUN npm run build
+
+# Estágio de produção
+FROM nginx:alpine as production
+
+# Copiar configuração personalizada do nginx
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Configuração do Nginx para SPA (Single Page Application)
+RUN echo 'server { \
+    listen 80; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    location / { \
+        try_files $uri $uri/ /index.html; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
+
+# Expor porta para produção
+EXPOSE 80
+
+# Comando para iniciar o Nginx
+CMD ["nginx", "-g", "daemon off;"]
