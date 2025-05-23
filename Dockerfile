@@ -1,33 +1,36 @@
 # Etapa 1 - Build do frontend (Vite)
-FROM node:18-alpine AS builder
+FROM node:18-alpine AS client-build
 
 WORKDIR /app
 
-# Copiar arquivos do monorepo
+# Copiar arquivos principais
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/client ./apps/client
 
-# Instalar dependências e buildar o client
+# Instalar dependências do frontend e buildar
 RUN npm install -g pnpm && \
-    pnpm install --filter client... && \
+    pnpm install --filter ./apps/client && \
     cd apps/client && pnpm build
 
-# Etapa 2 - Rodar o backend e servir o frontend
+# Etapa 2 - Build final para rodar backend e servir frontend
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Instalar dependências necessárias
+# Copiar arquivos principais e do backend
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/server ./apps/server
 COPY database.sqlite ./
 
-# Copiar build do client para o public do server
-COPY --from=builder /app/apps/client/dist ./apps/server/public
+# Copiar build do client para public do server
+COPY --from=client-build /app/apps/client/dist ./apps/server/public
 
-RUN npm install -g pnpm && pnpm install --filter server...
+# Instalar dependências do server
+RUN npm install -g pnpm && \
+    pnpm install --filter ./apps/server
 
+# Expõe a porta padrão usada pelo backend
 EXPOSE 3000
 
-# Comando para iniciar o backend (que já serve o frontend buildado)
-CMD ["pnpm", "--filter", "server", "start"]
+# Inicia o backend (que serve o frontend)
+CMD ["pnpm", "--filter", "./apps/server", "start"]
