@@ -33,4 +33,4 @@ RUN npm install -g pnpm && \
 EXPOSE 3000
 
 # Inicia o backend (que serve o frontend)
-CMD ["pnpm", "--filter", "./apps/server", "start"]
+CMD ["pnpm", "--filter", "./apps/server", "npm run start"]
